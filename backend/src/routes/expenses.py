@@ -6,8 +6,6 @@ router = APIRouter()
 @router.get("/{user_id}", response_model=List[schemas.Expense])
 def read_expenses(user_id: int, db: Session = Depends(get_db)):
     raw_data = crud.Expense.get_expense_by_id(db=db, user_id=user_id)
-    # if raw_data:
-    #     raw_data.append({"members": []})
 
     return raw_data
 

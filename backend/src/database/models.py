@@ -1,8 +1,9 @@
-from sqlalchemy import (Boolean, Column, Date, DateTime,
-                        ForeignKey, Integer, String, Float)
-
-from sqlalchemy.orm import relationship
 from datetime import datetime
+
+from sqlalchemy import (Boolean, Column, DateTime, Float, ForeignKey, Integer,
+                        String)
+from sqlalchemy.orm import relationship
+
 from .database import Base
 
 
@@ -16,19 +17,21 @@ class User(Base):
     hashed_password = Column(String(50))
     is_active = Column(Boolean, default=True)
 
-    expense = relationship("Expense", back_populates="user")
+    max_expense = relationship("MaxExpense", back_populates="user")
+    expenses = relationship("Expense", back_populates="user")
+    savings = relationship("Saving", back_populates="user")
+    tags = relationship("Tag", back_populates="user")
+    friends = relationship("Friend", backref="Friend.friend_id",
+                           primaryjoin="User.id==Friend.user_id", lazy="joined")
 
 
 class Friend(Base):
     __tablename__ = "friends"
 
-    user_id = Column(Integer, ForeignKey("users.id"),
-                     index=True, primary_key=True)
-    friend_id = Column(Integer, ForeignKey("users.id"),
-                       index=True, primary_key=True)
-
-    user = relationship("User", foreign_keys="Friend.user_id")
-    friend = relationship("User", foreign_keys="Friend.friend_id")
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    friend_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    request_status = Column(Boolean, default=False)
+    # Other user must accept request in order to reflect the user in friend list
 
 
 class Expense(Base):
@@ -40,8 +43,7 @@ class Expense(Base):
     tag_id = Column(Integer, ForeignKey("tags.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
 
-    # user = relationship("User", backref="expenses")
-    user = relationship("User", back_populates="expense")
+    user = relationship("User", back_populates="expenses")
     tag = relationship("Tag", backref="expenses")
 
 
@@ -50,11 +52,11 @@ class Saving(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     # No default: Will be populated every end of the month
-    date = Column(Date, index=True)
+    date = Column(DateTime, index=True)
     amount = Column(Float, default=0.00)
     user_id = Column(Integer, ForeignKey("users.id"))
 
-    user = relationship("User", backref="savings")
+    user = relationship("User", back_populates="savings")
 
 
 class Tag(Base):
@@ -64,7 +66,7 @@ class Tag(Base):
     name = Column(String(100), index=True, default=["owned", "due"])
     user_id = Column(Integer, ForeignKey("users.id"))
 
-    user = relationship("User", backref="tags")
+    user = relationship("User", back_populates="tags")
 
 
 class MaxExpense(Base):
@@ -73,3 +75,5 @@ class MaxExpense(Base):
     id = Column(Integer, primary_key=True, index=True)
     amount = Column(Float, default=0.00)
     user_id = Column(Integer, ForeignKey("users.id"))
+
+    user = relationship("User", back_populates="max_expense")

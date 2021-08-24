@@ -1,11 +1,10 @@
 from functools import lru_cache
 
-import uvicorn
-from fastapi import FastAPI, Request, Response
-
 import config
+import uvicorn
 from database.database import SessionLocal
-from routes import users, friends, expenses
+from fastapi import FastAPI, Request, Response
+from routes import expenses, friends, max_expense, users
 
 app = FastAPI()
 
@@ -26,10 +25,9 @@ def handle_url(path: str):
 
 
 app.include_router(users.router, prefix=handle_url("/users"), tags=["users"])
-app.include_router(friends.router, prefix=handle_url(
-    "/friends"), tags=["friends"])
-app.include_router(expenses.router, prefix=handle_url(
-    "/expenses"), tags=["expenses"])
+app.include_router(friends.router, prefix=handle_url("/friends"), tags=["friends"])
+app.include_router(expenses.router, prefix=handle_url("/expenses"), tags=["expenses"])
+app.include_router(max_expense.router, prefix=handle_url("/max_expense"), tags=["max_expense"])
 
 
 @lru_cache()

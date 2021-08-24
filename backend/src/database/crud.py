@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from datetime import datetime
+
 from . import models, schemas
 
 
@@ -25,6 +25,7 @@ class User:
             email=user.email,
             hashed_password=fake_hashed_password
         )
+
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
@@ -42,13 +43,15 @@ class Friend:
         return db.query(models.Friend).filter(models.Friend.user_id == User.get_user_by_username(db, username).id).all()
 
     def check_friend_exists(db: Session, user_id: int, friend_id: int):
-        if db.query(models.Friend).filter(models.Friend.user_id == user_id and models.Friend.friend_id == friend_id):
+        statement = db.query(models.Friend).filter(
+            models.Friend.user_id == user_id, models.Friend.friend_id == friend_id).all()
+        if statement:
             return True
         return False
 
     def create_friend(db: Session, data: schemas.FriendCreate):
-        db_friend_relation = models.Friend(
-            user_id=data.user_id, friend_id=data.friend_id)
+        db_friend_relation = models.Friend(user_id=data.user_id, friend_id=data.friend_id)
+
         db.add(db_friend_relation)
         db.commit()
         db.refresh(db_friend_relation)
@@ -61,7 +64,32 @@ class Expense:
 
     def create_expense(db: Session, expense: schemas.ExpenseCreate):
         entry = models.Expense(**expense.dict())
+
         db.add(entry)
         db.commit()
         db.refresh(entry)
         return entry
+
+
+class MaxExpense:
+    def get_max_expenses(db: Session, skip: int = 0, limit: int = 100):
+        return db.query(models.MaxExpense).offset(skip).limit(limit).all()
+
+    def get_user_max_expense_by_id(db: Session, user_id: int):
+        return db.query(models.MaxExpense).filter(models.MaxExpense.user_id == user_id).all()
+
+    def create_max_expense(db: Session, data: schemas.MaxExpenseCreate):
+        entry = models.MaxExpense(**data.dict())
+
+        db.add(entry)
+        db.commit()
+        db.refresh(entry)
+        return entry
+
+    def update_max_expense(db: Session, data: schemas.MaxExpenseCreate):
+        user_max_expense = db.query(models.MaxExpense).filter(
+            models.MaxExpense.user_id == data.user_id)
+        user_max_expense.update({"amount": data.amount}, synchronize_session=False)
+
+        db.commit()
+        return db.query(models.MaxExpense).filter(models.MaxExpense.user_id == data.user_id).one_or_none()

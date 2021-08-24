@@ -1,5 +1,6 @@
-from typing import List
 from datetime import datetime
+from typing import List
+
 from pydantic import BaseModel
 
 
@@ -27,23 +28,23 @@ class FriendCreate(FriendBase):
 
 
 class Friend(FriendBase):
-    name: str
+    friend_id: int
 
     class Config:
         orm_mode = True
 
 
 class MaxExpenseBase(BaseModel):
-    temp: str
+    user_id: int
 
 
 class MaxExpenseCreate(MaxExpenseBase):
     amount: float
-    user_id: int
 
 
 class MaxExpense(MaxExpenseBase):
     id: int
+    amount: float
 
     class Config:
         orm_mode = True
@@ -97,6 +98,7 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     is_active: bool
+    friends: List[Friend] = []
     expense: List[Expense] = []
 
     class Config:

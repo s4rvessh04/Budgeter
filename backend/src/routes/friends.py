@@ -6,11 +6,9 @@ router = APIRouter()
 @router.post("/{user_id}", response_model=schemas.Friend)
 def create_friend(user_id: int, friend_id: int, db: Session = Depends(get_db)):
     if user_id == friend_id:
-        raise HTTPException(
-            status_code=400, detail="Cannot assign same id as friend")
+        raise HTTPException(status_code=400, detail="Cannot assign same id as friend")
     if crud.Friend.check_friend_exists(db, user_id=user_id, friend_id=friend_id):
-        raise HTTPException(
-            status_code=400, detail="Friend already in friend list")
+        raise HTTPException(status_code=400, detail="Friend already in friend list")
     data = schemas.FriendCreate(user_id=user_id, friend_id=friend_id)
     return crud.Friend.create_friend(db=db, data=data)
 
