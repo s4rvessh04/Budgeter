@@ -11,7 +11,9 @@ db_password = os.getenv("DB_PASSWORD")
 db_server = os.getenv("DB_SERVER")
 db_name = os.getenv("DB_NAME")
 
-SQLALCHEMY_DATABASE_URL = f"mysql+mysqlconnector://{db_username}:{db_password}@{db_server}/{db_name}"
+SQLALCHEMY_DATABASE_URL = (
+    f"mysql+mysqlconnector://{db_username}:{db_password}@{db_server}/{db_name}"
+)
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
