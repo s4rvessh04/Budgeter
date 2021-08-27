@@ -25,3 +25,15 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     return crud.User.create_user(db=db, user=user)
+
+
+@router.put("/{user_id}", response_model=schemas.User)
+def update_user(user_id: int, data: schemas.UserCreate, db: Session = Depends(get_db)):
+    return crud.User.update_user(user_id=user_id, data=data, db=db)
+
+
+@router.delete("/{user_id}", status_code=200)
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    if crud.User.delete_user(user_id=user_id, db=db):
+        return {"msg": "Successfully Deleted"}
+    raise HTTPException(404, detail="Nothing to delete for this user.")
