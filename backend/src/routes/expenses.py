@@ -10,10 +10,41 @@ def read_expenses(user_id: int, db: Session = Depends(get_db)):
     return raw_data
 
 
-@router.post("/", response_model=schemas.Expense)
-def create_expense(data: schemas.ExpenseCreate, db=Depends(get_db)):
-    return crud.Expense.create_expense(db=db, expense=data)
+# @router.post("/{user_id}")
+@router.post("/{user_id}", response_model=schemas.Expense)
+def create_expense(
+    user_id: int, data: schemas.ExpenseCreate, db: Session = Depends(get_db)
+):
+    main_expense = crud.Expense.create_expense(db=db, user_id=user_id, expense=data)
+
+    if data.shared:
+        shared_expense = crud.SharedExpense.create_shared_expense(
+            db=db,
+            user_id=user_id,
+            data=data.shared_expense,
+            expense_id=main_expense.id,
+        )
+
+        crud.Expense.update_expense(
+            db=db,
+            user_id=user_id,
+            id=main_expense.id,
+            shared_expense_id=shared_expense.id,
+            data=data,
+        )
+
+        shared_expense = main_expense.shared_expense
+
+    return main_expense
 
 
-def create_members():
-    ...
+@router.put("/{user_id}", response_model=schemas.Expense)
+def update_expense(
+    user_id: int, id: int, data: schemas.ExpenseCreate, db: Session = Depends(get_db)
+):
+    return crud.Expense.update_expense(db=db, user_id=user_id, id=id, data=data)
+
+
+@router.delete("/{user_id}", status_code=200)
+def delete_expense(user_id: int, id: int, db: Session = Depends(get_db)):
+    return crud.Expense.delete_expense(db=db, user_id=user_id, id=id)

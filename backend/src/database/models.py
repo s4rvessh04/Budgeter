@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from sqlalchemy import (Boolean, Column, DateTime, Float, ForeignKey, Integer,
-                        String)
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.expression import null
 
 from .database import Base
 
@@ -21,8 +21,18 @@ class User(Base):
     expenses = relationship("Expense", back_populates="user")
     savings = relationship("Saving", back_populates="user")
     tags = relationship("Tag", back_populates="user")
-    friends = relationship("Friend", backref="Friend.friend_id",
-                           primaryjoin="User.id==Friend.user_id", lazy="joined")
+    shared_expenses = relationship(
+        "SharedExpense",
+        backref="SharedExpense.member_id",
+        primaryjoin="User.id==SharedExpense.main_user_id",
+        lazy="joined",
+    )
+    friends = relationship(
+        "Friend",
+        backref="Friend.friend_id",
+        primaryjoin="User.id==Friend.user_id",
+        lazy="joined",
+    )
 
 
 class Friend(Base):
@@ -31,7 +41,17 @@ class Friend(Base):
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     friend_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     request_status = Column(Boolean, default=False)
-    # Other user must accept request in order to reflect the user in friend list
+    # * Other user must accept request in order to reflect the user in friend list
+
+
+class MaxExpense(Base):
+    __tablename__ = "max_expenses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    amount = Column(Float, default=0.00)
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    user = relationship("User", back_populates="max_expense")
 
 
 class Expense(Base):
@@ -40,18 +60,36 @@ class Expense(Base):
     id = Column(Integer, primary_key=True, index=True)
     date = Column(DateTime, default=datetime.utcnow, index=True)
     amount = Column(Float, default=0.00)
-    tag_id = Column(Integer, ForeignKey("tags.id"))
+    description = Column(String(200))
+    tag_id = Column(Integer, ForeignKey("tags.id"), nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
+    shared = Column(Boolean, default=False)
+    shared_expense_id = Column(Integer, ForeignKey("shared_expenses.id"), nullable=True)
 
+    shared_expense = relationship(
+        "SharedExpense", foreign_keys="Expense.shared_expense_id"
+    )
     user = relationship("User", back_populates="expenses")
-    tag = relationship("Tag", backref="expenses")
+
+
+class SharedExpense(Base):
+    __tablename__ = "shared_expenses"
+
+    id = Column(Integer, index=True, primary_key=True)
+    expense_id = Column(Integer, ForeignKey("expenses.id"), index=True)
+    main_user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    member_id = Column(Integer, ForeignKey("users.id"), index=True)
+    amount = Column(Float, default=0.00)
+    description = Column(String(200))
+    date = Column(DateTime)
+    tag_id = Column(Integer, ForeignKey("tags.id"), index=True, nullable=True)
 
 
 class Saving(Base):
     __tablename__ = "savings"
 
     id = Column(Integer, primary_key=True, index=True)
-    # No default: Will be populated every end of the month
+    # * No default: Will be populated every end of the month
     date = Column(DateTime, index=True)
     amount = Column(Float, default=0.00)
     user_id = Column(Integer, ForeignKey("users.id"))
@@ -63,17 +101,7 @@ class Tag(Base):
     __tablename__ = "tags"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), index=True, default=["owned", "due"])
+    name = Column(String(100), index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
 
     user = relationship("User", back_populates="tags")
-
-
-class MaxExpense(Base):
-    __tablename__ = "max_expenses"
-
-    id = Column(Integer, primary_key=True, index=True)
-    amount = Column(Float, default=0.00)
-    user_id = Column(Integer, ForeignKey("users.id"))
-
-    user = relationship("User", back_populates="max_expense")
