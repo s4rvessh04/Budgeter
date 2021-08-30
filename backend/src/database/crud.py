@@ -146,17 +146,11 @@ class Expense:
         user_id: int,
         id: int,
         data: schemas.ExpenseCreate,
-        shared_expense_id: int = None,
     ):
         expense = db.query(models.Expense).filter(
             models.Expense.user_id == user_id, models.Expense.id == id
         )
-        if shared_expense_id is not None:
-            expense.update(
-                {"shared_expense_id": shared_expense_id}, synchronize_session="fetch"
-            )
-        else:
-            expense.update(data.dict(exclude_none=True), synchronize_session="fetch")
+        expense.update(data.dict(exclude_none=True), synchronize_session="fetch")
 
         db.commit()
         return expense.one_or_none()
@@ -176,22 +170,29 @@ class SharedExpense:
     def create_shared_expense(
         db: Session, user_id: int, expense_id: int, data: schemas.SharedExpenseCreate
     ):
-        entry = models.SharedExpense(
-            **data.dict(
-                exclude_none=True,
-                exclude={
-                    "shared_expense",
-                },
-            ),
-            main_user_id=user_id,
-            expense_id=expense_id,
-        )
+        members_and_amount = data.members_and_amount
 
-        db.add(entry)
-        db.commit()
-        db.refresh(entry)
+        def enter_all():
+            for member in members_and_amount:
 
-        return entry
+                entry = models.SharedExpense(
+                    **data.dict(
+                        exclude_none=True,
+                        exclude={"shared_expense", "members_and_amount"},
+                    ),
+                    member_id=member,
+                    amount=members_and_amount[member],
+                    expense_id=expense_id,
+                    main_user_id=user_id,
+                )
+
+                yield entry
+
+        entries = list(enter_all())
+        # db.bulk_save_objects(entries)
+        # db.commit()
+
+        return entries
 
 
 class MaxExpense:

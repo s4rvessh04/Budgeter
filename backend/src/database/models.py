@@ -64,11 +64,8 @@ class Expense(Base):
     tag_id = Column(Integer, ForeignKey("tags.id"), nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     shared = Column(Boolean, default=False)
-    shared_expense_id = Column(Integer, ForeignKey("shared_expenses.id"), nullable=True)
 
-    shared_expense = relationship(
-        "SharedExpense", foreign_keys="Expense.shared_expense_id"
-    )
+    shared_expenses = relationship("SharedExpense", back_populates="expense")
     user = relationship("User", back_populates="expenses")
 
 
@@ -82,6 +79,8 @@ class SharedExpense(Base):
     amount = Column(Float, default=0.00)
     description = Column(String(200))
     date = Column(DateTime)
+
+    expense = relationship("Expense", back_populates="shared_expenses")
     tag_id = Column(Integer, ForeignKey("tags.id"), index=True, nullable=True)
 
 

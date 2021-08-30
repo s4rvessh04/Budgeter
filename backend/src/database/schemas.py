@@ -78,7 +78,7 @@ class SharedExpenseBase(BaseModel):
 
 
 class SharedExpenseCreate(SharedExpenseBase):
-    members_and_amount: Dict[int, float] = {"member_id": "member_amount"}
+    members_and_amount: Dict[int, float]
     description: Optional[str] = None
     date: datetime = None
     tag_id: int = None
@@ -88,7 +88,7 @@ class SharedExpense(SharedExpenseBase):
     id: int
     expense_id: int = None
     main_user_id: int = None
-    members_and_amount: Dict[int, float] = {"member_id": "member_amount"}
+    members_and_amount: Dict[int, float]
     description: str = None
     date: datetime
     tag_id: int = None
@@ -103,8 +103,7 @@ class ExpenseCreate(ExpenseBase):
     amount: float
     tag_id: Optional[int] = None
     shared: bool = False
-    shared_expense_id: Optional[int] = None
-    shared_expense: Optional[SharedExpenseCreate] = None
+    shared_expense: SharedExpenseCreate = None
 
 
 class Expense(ExpenseBase):
@@ -115,8 +114,7 @@ class Expense(ExpenseBase):
     amount: float
     tag_id: int = None
     shared: bool
-    shared_expense_id: int = None
-    shared_expense: SharedExpense = None
+    shared_expense: List[SharedExpense] = None
 
     class Config:
         orm_mode = True
