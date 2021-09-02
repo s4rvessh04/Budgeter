@@ -2,7 +2,6 @@ from datetime import datetime
 
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.expression import null
 
 from .database import Base
 
@@ -21,12 +20,6 @@ class User(Base):
     expenses = relationship("Expense", back_populates="user")
     savings = relationship("Saving", back_populates="user")
     tags = relationship("Tag", back_populates="user")
-    shared_expenses = relationship(
-        "SharedExpense",
-        backref="SharedExpense.member_id",
-        primaryjoin="User.id==SharedExpense.main_user_id",
-        lazy="joined",
-    )
     friends = relationship(
         "Friend",
         backref="Friend.friend_id",
@@ -75,13 +68,13 @@ class SharedExpense(Base):
     id = Column(Integer, index=True, primary_key=True)
     expense_id = Column(Integer, ForeignKey("expenses.id"), index=True)
     main_user_id = Column(Integer, ForeignKey("users.id"), index=True)
-    member_id = Column(Integer, ForeignKey("users.id"), index=True)
+    member_id = Column(Integer, ForeignKey("users.id"))
     amount = Column(Float, default=0.00)
     description = Column(String(200))
-    date = Column(DateTime)
+    date = Column(DateTime, default=datetime.utcnow)
+    tag_id = Column(Integer, ForeignKey("tags.id"), nullable=True)
 
     expense = relationship("Expense", back_populates="shared_expenses")
-    tag_id = Column(Integer, ForeignKey("tags.id"), index=True, nullable=True)
 
 
 class Saving(Base):

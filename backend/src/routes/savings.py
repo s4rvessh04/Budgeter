@@ -32,10 +32,8 @@ def update_user_saving(
 
 @router.delete("/{user_id}", status_code=200)
 def delete_user_savings(
-    user_id: int, id: List[int], all: bool = False, db: Session = Depends(get_db)
+    user_id: int, id_s: List[int], all: bool = False, db: Session = Depends(get_db)
 ):
-    # When all is True, delete all of the user savings,
-    # When all is False, delete only the supplied id(s) saving
-    if crud.Saving.delete_saving(db=db, user_id=user_id, id=id, all=all):
+    if crud.Saving.delete_saving(db=db, user_id=user_id, id_s=id_s, all=all):
         return {"msg": f"Successfully deleted"}
     return HTTPException(404, detail="Nothing to delete for this user.")

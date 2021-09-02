@@ -80,18 +80,21 @@ class SharedExpenseBase(BaseModel):
 class SharedExpenseCreate(SharedExpenseBase):
     members_and_amount: Dict[int, float]
     description: Optional[str] = None
-    date: datetime = None
     tag_id: int = None
 
 
 class SharedExpense(SharedExpenseBase):
     id: int
-    expense_id: int = None
-    main_user_id: int = None
-    members_and_amount: Dict[int, float]
-    description: str = None
+    expense_id: int
+    main_user_id: int
+    member_id: int
+    amount: float
+    description: str
     date: datetime
     tag_id: int = None
+
+    class Config:
+        orm_mode = True
 
 
 class ExpenseBase(BaseModel):
@@ -114,7 +117,7 @@ class Expense(ExpenseBase):
     amount: float
     tag_id: int = None
     shared: bool
-    shared_expense: List[SharedExpense] = None
+    shared_expenses: List[SharedExpense] = []
 
     class Config:
         orm_mode = True
@@ -135,7 +138,6 @@ class User(UserBase):
     is_active: bool
     friends: List[Friend] = []
     expenses: List[Expense] = []
-    shared_expenses: List[SharedExpense] = []
     savings: List[Saving] = []
     tags: List[Tag] = []
     max_expense: List[MaxExpense] = []

@@ -1,8 +1,6 @@
-from re import S
 from typing import List
 
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.functions import user
 
 from . import models, schemas
 
@@ -62,7 +60,6 @@ class User:
         return deleted_rows_count
 
 
-# TODO: Update the user_id param
 class Friend:
     def get_friends_by_id(db: Session, user_id: int):
         return db.query(models.Friend).filter(models.Friend.user_id == user_id).all()
@@ -83,42 +80,62 @@ class Friend:
             )
             .one_or_none()
         )
+
         if statement is None:
             return statement
-        if statement.request_status == True:
-            return True
-        return False
+        return True if statement.request_status == True else False
 
-    def create_friend(db: Session, data: schemas.FriendCreate):
+    def create_friend(db: Session, user_id: int, data: schemas.FriendCreate):
         db_user_relation = models.Friend(
-            user_id=data.user_id, friend_id=data.friend_id, request_status=True
+            user_id=user_id, friend_id=data.friend_id, request_status=True
         )
 
         db.add(db_user_relation)
         db.commit()
         db.refresh(db_user_relation)
 
-        db_friend_relation = models.Friend(
-            user_id=data.friend_id, friend_id=data.user_id
-        )
+        db_friend_relation = models.Friend(user_id=data.friend_id, friend_id=user_id)
 
         db.add(db_friend_relation)
         db.commit()
         db.refresh(db_friend_relation)
         return db_friend_relation
 
-    def update_friend(db: Session, user_id: int, data: schemas.FriendCreate):
+    def update_friend(db: Session, user_id: int, friend_id: int):
         friend = db.query(models.Friend).filter(
             models.Friend.user_id == user_id,
-            models.Friend.friend_id == data.friend_id,
+            models.Friend.friend_id == friend_id,
         )
-        friend.update(data.dict(exclude_none=True), synchronize_session="fetch")
+
+        request_status = friend.one_or_none().request_status
+        friend.update(
+            {"request_status": True if not request_status else False},
+            synchronize_session="fetch",
+        )
 
         db.commit()
         return friend.one_or_none()
 
-    def delete_friend(db: Session, user_id: int, data: schemas.FriendCreate):
-        ...
+    def delete_friend(db: Session, user_id: int, friend_id_s: List[int]):
+        main_user_count = (
+            db.query(models.Friend)
+            .filter(
+                models.Friend.user_id == user_id,
+                models.Friend.friend_id.in_(friend_id_s),
+            )
+            .delete(synchronize_session="fetch")
+        )
+        friend_user_count = (
+            db.query(models.Friend)
+            .filter(
+                models.Friend.friend_id == user_id,
+                models.Friend.user_id.in_(friend_id_s),
+            )
+            .delete(synchronize_session="fetch")
+        )
+
+        db.commit()
+        return main_user_count + friend_user_count
 
 
 class Expense:
@@ -155,10 +172,10 @@ class Expense:
         db.commit()
         return expense.one_or_none()
 
-    def delete_expense(db: Session, user_id: int, id: int):
+    def delete_expense(db: Session, user_id: int, id_s: List[int]):
         deleted_rows_count = (
             db.query(models.Expense)
-            .filter(models.Expense.user_id == user_id, models.Expense.id == id)
+            .filter(models.Expense.user_id == user_id, models.Expense.id.in_(id_s))
             .delete(synchronize_session="fetch")
         )
 
@@ -189,10 +206,50 @@ class SharedExpense:
                 yield entry
 
         entries = list(enter_all())
-        # db.bulk_save_objects(entries)
-        # db.commit()
 
-        return entries
+        for model_instance in entries:
+            db.add(model_instance)
+            db.commit()
+            db.refresh(model_instance)
+
+        return True
+
+    def read_shared_expense(db: Session, user_id: int, skip: int, limit: int):
+        return (
+            db.query(models.SharedExpense)
+            .filter(models.SharedExpense.main_user_id == user_id)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+
+    def update_shared_expense(
+        db: Session, user_id: int, expense_id: int, data: schemas.SharedExpenseCreate
+    ):
+        shared_expense = db.query(models.SharedExpense).filter(
+            models.SharedExpense.main_user_id == user_id,
+            models.SharedExpense.expense_id == expense_id,
+        )
+        shared_expense.update(data.dict(exclude_none=True), synchronize_session="fetch")
+
+        db.commit()
+
+        return shared_expense.all()
+
+    def delete_shared_expense(
+        db: Session, user_id: int, expense_id: int, shared_expense_id_s: List[int]
+    ):
+        main_expense = db.query(models.SharedExpense).filter(
+            models.SharedExpense.main_user_id == user_id,
+            models.SharedExpense.expense_id == expense_id,
+        )
+
+        deleted_rows = main_expense.filter(
+            models.SharedExpense.id.in_(shared_expense_id_s)
+        ).delete(synchronize_session="fetch")
+
+        db.commit()
+        return deleted_rows
 
 
 class MaxExpense:
@@ -261,11 +318,19 @@ class Saving:
         db.commit()
         return user_saving.one_or_none()
 
-    def delete_saving(db: Session, user_id: int, id: List[int], all: bool):
-        user_savings = db.query(models.Saving).filter(
-            models.Saving.user_id == user_id, models.Saving.id.in_(id)
-        )
-        user_savings.delete(synchronize_session="fetch")
+    def delete_saving(db: Session, user_id: int, id_s: List[int], all: bool):
+        if all:
+            user_savings = (
+                db.query(models.Saving)
+                .filter(models.Saving.user_id == user_id)
+                .delete(synchronize_session="fetch")
+            )
+        else:
+            user_savings = (
+                db.query(models.Saving)
+                .filter(models.Saving.user_id == user_id, models.Saving.id.in_(id_s))
+                .delete(synchronize_session="fetch")
+            )
 
         db.commit()
         return user_savings
@@ -295,7 +360,7 @@ class Tag:
         db.commit()
         return user_tag.one_or_none()
 
-    def delete_tags(db: Session, user_id: int, id: List[int], all: bool = False):
+    def delete_tags(db: Session, user_id: int, id_s: List[int], all: bool = False):
         if all:
             user_tags = (
                 db.query(models.Tag)
@@ -305,7 +370,7 @@ class Tag:
         else:
             user_tags = (
                 db.query(models.Tag)
-                .filter(models.Tag.user_id == user_id, models.Tag.id.in_(id))
+                .filter(models.Tag.user_id == user_id, models.Tag.id.in_(id_s))
                 .delete(synchronize_session="fetch")
             )
 

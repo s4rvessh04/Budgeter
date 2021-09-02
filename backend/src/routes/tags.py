@@ -31,11 +31,8 @@ def update_user_tag(
 
 @router.delete("/{user_id}", status_code=200)
 def delete_user_tag(
-    user_id: int, id: List[int], all: bool = False, db: Session = Depends(get_db)
+    user_id: int, id_s: List[int], all: bool = False, db: Session = Depends(get_db)
 ):
-    if crud.Tag.delete_tags(db=db, user_id=user_id, id=id, all=all):
+    if crud.Tag.delete_tags(db=db, user_id=user_id, id_s=id_s, all=all):
         return {"msg": "Successfully Deleted."}
     return HTTPException(404, detail="Nothing to delete for this user.")
-
-
-# TODO: Update schema for tag to not take user_id, as is supplied via path parameter
