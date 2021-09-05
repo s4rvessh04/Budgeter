@@ -34,7 +34,6 @@ class Friend(Base):
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     friend_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     request_status = Column(Boolean, default=False)
-    # * Other user must accept request in order to reflect the user in friend list
 
 
 class MaxExpense(Base):
@@ -81,7 +80,6 @@ class Saving(Base):
     __tablename__ = "savings"
 
     id = Column(Integer, primary_key=True, index=True)
-    # * No default: Will be populated every end of the month
     date = Column(DateTime, index=True)
     amount = Column(Float, default=0.00)
     user_id = Column(Integer, ForeignKey("users.id"))

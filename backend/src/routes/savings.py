@@ -24,9 +24,6 @@ def create_user_saving(
 def update_user_saving(
     user_id: int, data: schemas.Saving, db: Session = Depends(get_db)
 ):
-    # All the user's savings will have an index in the returned list,
-    # so take that index in order to update the date / amount or both.
-    # Although only the amount updating makes more sense.
     return crud.Saving.update_saving(db=db, user_id=user_id, id=data.id, data=data)
 
 
@@ -35,5 +32,5 @@ def delete_user_savings(
     user_id: int, id_s: List[int], all: bool = False, db: Session = Depends(get_db)
 ):
     if crud.Saving.delete_saving(db=db, user_id=user_id, id_s=id_s, all=all):
-        return {"msg": f"Successfully deleted"}
+        return {"msg": "Successfully deleted."}
     return HTTPException(404, detail="Nothing to delete for this user.")

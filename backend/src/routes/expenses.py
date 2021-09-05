@@ -1,4 +1,3 @@
-from datetime import datetime
 from . import *
 
 router = APIRouter()
@@ -69,9 +68,11 @@ def delete_shared_expenses(
     shared_expense_id_s: List[int],
     db: Session = Depends(get_db),
 ):
-    return crud.SharedExpense.delete_shared_expense(
+    if crud.SharedExpense.delete_shared_expense(
         db=db,
         user_id=user_id,
         expense_id=expense_id,
         shared_expense_id_s=shared_expense_id_s,
-    )
+    ):
+        return {"msg": "Successfully deleted."}
+    return HTTPException(404, detail="Nothing to delete for this user.")

@@ -35,4 +35,6 @@ def update_friend(user_id: int, friend_id: int, db: Session = Depends(get_db)):
 
 @router.delete("/{user_id}", status_code=200)
 def delete_friend(user_id: int, friend_id_s: List[int], db: Session = Depends(get_db)):
-    return crud.Friend.delete_friend(db=db, user_id=user_id, friend_id_s=friend_id_s)
+    if crud.Friend.delete_friend(db=db, user_id=user_id, friend_id_s=friend_id_s):
+        return {"msg": "Successfully deleted."}
+    return HTTPException(404, detail="Nothing to delete for this user.")

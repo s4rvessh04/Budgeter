@@ -41,7 +41,7 @@ class User:
                 exclude={
                     "password",
                 },
-                exclude_none=True,
+                exclude_unset=True,
             ),
             synchronize_session="fetch",
         )
@@ -99,7 +99,7 @@ class Friend:
         db.add(db_friend_relation)
         db.commit()
         db.refresh(db_friend_relation)
-        return db_friend_relation
+        return db_user_relation
 
     def update_friend(db: Session, user_id: int, friend_id: int):
         friend = db.query(models.Friend).filter(
@@ -109,7 +109,7 @@ class Friend:
 
         request_status = friend.one_or_none().request_status
         friend.update(
-            {"request_status": True if not request_status else False},
+            {"request_status": False if request_status else True},
             synchronize_session="fetch",
         )
 
@@ -145,7 +145,7 @@ class Expense:
     def create_expense(db: Session, user_id: int, expense: schemas.ExpenseCreate):
         entry = models.Expense(
             **expense.dict(
-                exclude_none=True,
+                exclude_unset=True,
                 exclude={
                     "shared_expense",
                 },
@@ -167,7 +167,7 @@ class Expense:
         expense = db.query(models.Expense).filter(
             models.Expense.user_id == user_id, models.Expense.id == id
         )
-        expense.update(data.dict(exclude_none=True), synchronize_session="fetch")
+        expense.update(data.dict(exclude_unset=True), synchronize_session="fetch")
 
         db.commit()
         return expense.one_or_none()
@@ -194,7 +194,7 @@ class SharedExpense:
 
                 entry = models.SharedExpense(
                     **data.dict(
-                        exclude_none=True,
+                        exclude_unset=True,
                         exclude={"shared_expense", "members_and_amount"},
                     ),
                     member_id=member,
@@ -217,7 +217,7 @@ class SharedExpense:
     def read_shared_expense(db: Session, user_id: int, skip: int, limit: int):
         return (
             db.query(models.SharedExpense)
-            .filter(models.SharedExpense.main_user_id == user_id)
+            .filter(models.SharedExpense.member_id == user_id)
             .offset(skip)
             .limit(limit)
             .all()
@@ -230,7 +230,9 @@ class SharedExpense:
             models.SharedExpense.main_user_id == user_id,
             models.SharedExpense.expense_id == expense_id,
         )
-        shared_expense.update(data.dict(exclude_none=True), synchronize_session="fetch")
+        shared_expense.update(
+            data.dict(exclude_unset=True), synchronize_session="fetch"
+        )
 
         db.commit()
 
@@ -278,11 +280,7 @@ class MaxExpense:
         user_max_expense.update({"amount": data.amount}, synchronize_session="fetch")
 
         db.commit()
-        return (
-            db.query(models.MaxExpense)
-            .filter(models.MaxExpense.user_id == user_id)
-            .one_or_none()
-        )
+        return user_max_expense.one_or_none()
 
     def delete_max_expense(db: Session, user_id: int):
         deleted_rows_count = (
@@ -290,6 +288,7 @@ class MaxExpense:
             .filter(models.MaxExpense.user_id == user_id)
             .delete(synchronize_session="fetch")
         )
+
         db.commit()
         return deleted_rows_count
 
@@ -343,8 +342,8 @@ class Tag:
     def get_user_tags(db: Session, user_id: int):
         return db.query(models.Tag).filter(models.Tag.user_id == user_id).all()
 
-    def create_tag(db: Session, data: schemas.TagCreate):
-        entry = models.Tag(**data.dict())
+    def create_tag(db: Session, user_id: int, data: schemas.TagCreate):
+        entry = models.Tag(**data.dict(exclude_unset=True), user_id=user_id)
 
         db.add(entry)
         db.commit()

@@ -17,7 +17,6 @@ def read_user_tags(user_id: int, db: Session = Depends(get_db)):
 def create_user_tag(
     user_id: int, data: schemas.TagCreate, db: Session = Depends(get_db)
 ):
-    data.user_id = user_id
     return crud.Tag.create_tag(db=db, data=data, user_id=user_id)
 
 
@@ -25,7 +24,6 @@ def create_user_tag(
 def update_user_tag(
     user_id: int, id: int, data: schemas.TagCreate, db: Session = Depends(get_db)
 ):
-    data.user_id = user_id
     return crud.Tag.update_tag(db=db, user_id=user_id, id=id, data=data)
 
 
@@ -34,5 +32,5 @@ def delete_user_tag(
     user_id: int, id_s: List[int], all: bool = False, db: Session = Depends(get_db)
 ):
     if crud.Tag.delete_tags(db=db, user_id=user_id, id_s=id_s, all=all):
-        return {"msg": "Successfully Deleted."}
+        return {"msg": "Successfully deleted."}
     return HTTPException(404, detail="Nothing to delete for this user.")

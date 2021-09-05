@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, EmailStr
 
@@ -9,11 +9,12 @@ class TagBase(BaseModel):
 
 
 class TagCreate(TagBase):
-    user_id: int
+    pass
 
 
 class Tag(TagBase):
     id: int
+    user_id: int
 
     class Config:
         orm_mode = True

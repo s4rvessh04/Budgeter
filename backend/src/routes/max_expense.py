@@ -39,5 +39,5 @@ def update_max_expense(
 @router.delete("/{user_id}", status_code=200)
 def delete_max_expenese(user_id: int, db: Session = Depends(get_db)):
     if crud.MaxExpense.delete_max_expense(db=db, user_id=user_id):
-        return {"msg": f"Successfully deleted"}
+        return {"msg": "Successfully deleted."}
     return HTTPException(404, detail="Nothing to delete for this user.")

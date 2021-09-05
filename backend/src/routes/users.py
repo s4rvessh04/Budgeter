@@ -35,5 +35,5 @@ def update_user(user_id: int, data: schemas.UserCreate, db: Session = Depends(ge
 @router.delete("/{user_id}", status_code=200)
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     if crud.User.delete_user(user_id=user_id, db=db):
-        return {"msg": "Successfully Deleted"}
+        return {"msg": "Successfully deleted."}
     raise HTTPException(404, detail="Nothing to delete for this user.")
