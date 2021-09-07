@@ -44,7 +44,7 @@ class SavingBase(BaseModel):
 
 class SavingCreate(SavingBase):
     date: datetime = None
-    amount: float
+    amount: float = None
 
 
 class Saving(SavingBase):
@@ -104,7 +104,7 @@ class ExpenseBase(BaseModel):
 
 class ExpenseCreate(ExpenseBase):
     description: str = None
-    amount: float
+    amount: float = None
     tag_id: Optional[int] = None
     shared: bool = False
     shared_expense: SharedExpenseCreate = None
