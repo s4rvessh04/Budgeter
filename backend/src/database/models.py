@@ -1,6 +1,14 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    DECIMAL,
+)
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -40,7 +48,7 @@ class MaxExpense(Base):
     __tablename__ = "max_expenses"
 
     id = Column(Integer, primary_key=True, index=True)
-    amount = Column(Float, default=0.00)
+    amount = Column(DECIMAL(19, 4), default=0.00)
     user_id = Column(Integer, ForeignKey("users.id"))
 
     user = relationship("User", back_populates="max_expense")
@@ -51,7 +59,7 @@ class Expense(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     date = Column(DateTime, default=datetime.utcnow, index=True)
-    amount = Column(Float, default=0.00)
+    amount = Column(DECIMAL(19, 4), default=0.00)
     description = Column(String(200))
     tag_id = Column(Integer, ForeignKey("tags.id"), nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
@@ -68,7 +76,7 @@ class SharedExpense(Base):
     expense_id = Column(Integer, ForeignKey("expenses.id"), index=True)
     main_user_id = Column(Integer, ForeignKey("users.id"), index=True)
     member_id = Column(Integer, ForeignKey("users.id"))
-    amount = Column(Float, default=0.00)
+    amount = Column(DECIMAL(19, 4), default=0.00)
     description = Column(String(200))
     date = Column(DateTime, default=datetime.utcnow)
     tag_id = Column(Integer, ForeignKey("tags.id"), nullable=True)
@@ -81,7 +89,7 @@ class Saving(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     date = Column(DateTime, index=True)
-    amount = Column(Float, default=0.00)
+    amount = Column(DECIMAL(19, 4), default=0.00)
     user_id = Column(Integer, ForeignKey("users.id"))
 
     user = relationship("User", back_populates="savings")
