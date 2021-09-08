@@ -22,15 +22,15 @@ def create_user_tag(
 
 @router.put("/{user_id}", response_model=schemas.Tag)
 def update_user_tag(
-    user_id: int, id: int, data: schemas.TagCreate, db: Session = Depends(get_db)
+    user_id: int, tag_id: int, data: schemas.TagCreate, db: Session = Depends(get_db)
 ):
-    return crud.Tag.update_tag(db=db, user_id=user_id, id=id, data=data)
+    return crud.Tag.update_tag(db=db, user_id=user_id, tag_id=tag_id, data=data)
 
 
 @router.delete("/{user_id}", status_code=200)
 def delete_user_tag(
-    user_id: int, id_s: List[int], all: bool = False, db: Session = Depends(get_db)
+    user_id: int, tag_id_s: List[int], all: bool = False, db: Session = Depends(get_db)
 ):
-    if crud.Tag.delete_tags(db=db, user_id=user_id, id_s=id_s, all=all):
+    if crud.Tag.delete_tags(db=db, user_id=user_id, tag_id_s=tag_id_s, all=all):
         return {"msg": "Successfully deleted."}
-    return HTTPException(404, detail="Nothing to delete for this user.")
+    raise HTTPException(404, detail="Nothing to delete for this user.")

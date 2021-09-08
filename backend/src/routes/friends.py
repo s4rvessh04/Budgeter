@@ -20,21 +20,22 @@ def create_friend(
         db, user_id=user_id, friend_id=data.friend_id
     )
 
-    if friend_exist is None:
-        return crud.Friend.create_friend(db=db, user_id=user_id, data=data)
-
     if friend_exist:
         raise HTTPException(status_code=400, detail="Friend already in friend list")
+    elif friend_exist is None:
+        return crud.Friend.create_friend(db=db, user_id=user_id, data=data)
     return crud.Friend.update_friend(db=db, user_id=user_id, friend_id=data.friend_id)
 
 
 @router.put("/{user_id}", response_model=schemas.Friend)
-def update_friend(user_id: int, friend_id: int, db: Session = Depends(get_db)):
-    return crud.Friend.update_friend(db=db, user_id=user_id, friend_id=friend_id)
+def update_friend(
+    user_id: int, data: schemas.FriendCreate, db: Session = Depends(get_db)
+):
+    return crud.Friend.update_friend(db=db, user_id=user_id, friend_id=data.friend_id)
 
 
 @router.delete("/{user_id}", status_code=200)
 def delete_friend(user_id: int, friend_id_s: List[int], db: Session = Depends(get_db)):
     if crud.Friend.delete_friend(db=db, user_id=user_id, friend_id_s=friend_id_s):
         return {"msg": "Successfully deleted."}
-    return HTTPException(404, detail="Nothing to delete for this user.")
+    raise HTTPException(404, detail="Nothing to delete for this user.")

@@ -172,10 +172,12 @@ class Expense:
         db.commit()
         return expense.one_or_none()
 
-    def delete_expense(db: Session, user_id: int, id_s: List[int]):
+    def delete_expense(db: Session, user_id: int, expense_id_s: List[int]):
         deleted_rows_count = (
             db.query(models.Expense)
-            .filter(models.Expense.user_id == user_id, models.Expense.id.in_(id_s))
+            .filter(
+                models.Expense.user_id == user_id, models.Expense.id.in_(expense_id_s)
+            )
             .delete(synchronize_session="fetch")
         )
 
@@ -308,16 +310,18 @@ class Saving:
         db.refresh(entry)
         return entry
 
-    def update_saving(db: Session, user_id: int, id: int, data: schemas.SavingCreate):
+    def update_saving(
+        db: Session, user_id: int, saving_id: int, data: schemas.SavingCreate
+    ):
         user_saving = db.query(models.Saving).filter(
-            models.Saving.user_id == user_id, models.Saving.id == id
+            models.Saving.user_id == user_id, models.Saving.id == saving_id
         )
         user_saving.update(data.dict(), synchronize_session="fetch")
 
         db.commit()
         return user_saving.one_or_none()
 
-    def delete_saving(db: Session, user_id: int, id_s: List[int], all: bool):
+    def delete_saving(db: Session, user_id: int, saving_id_s: List[int], all: bool):
         if all:
             user_savings = (
                 db.query(models.Saving)
@@ -327,7 +331,9 @@ class Saving:
         else:
             user_savings = (
                 db.query(models.Saving)
-                .filter(models.Saving.user_id == user_id, models.Saving.id.in_(id_s))
+                .filter(
+                    models.Saving.user_id == user_id, models.Saving.id.in_(saving_id_s)
+                )
                 .delete(synchronize_session="fetch")
             )
 
@@ -350,16 +356,16 @@ class Tag:
         db.refresh(entry)
         return entry
 
-    def update_tag(db: Session, user_id: int, id: int, data: schemas.TagCreate):
+    def update_tag(db: Session, user_id: int, tag_id: int, data: schemas.TagCreate):
         user_tag = db.query(models.Tag).filter(
-            models.Tag.user_id == user_id, models.Tag.id == id
+            models.Tag.user_id == user_id, models.Tag.id == tag_id
         )
         user_tag.update(data.dict(), synchronize_session="fetch")
 
         db.commit()
         return user_tag.one_or_none()
 
-    def delete_tags(db: Session, user_id: int, id_s: List[int], all: bool = False):
+    def delete_tags(db: Session, user_id: int, tag_id_s: List[int], all: bool = False):
         if all:
             user_tags = (
                 db.query(models.Tag)
@@ -369,7 +375,7 @@ class Tag:
         else:
             user_tags = (
                 db.query(models.Tag)
-                .filter(models.Tag.user_id == user_id, models.Tag.id.in_(id_s))
+                .filter(models.Tag.user_id == user_id, models.Tag.id.in_(tag_id_s))
                 .delete(synchronize_session="fetch")
             )
 

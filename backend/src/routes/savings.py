@@ -22,15 +22,29 @@ def create_user_saving(
 
 @router.put("/{user_id}", response_model=schemas.Saving)
 def update_user_saving(
-    user_id: int, data: schemas.Saving, db: Session = Depends(get_db)
+    user_id: int,
+    data: schemas.SavingCreate,
+    saving_id: int = Query(None),
+    db: Session = Depends(get_db),
 ):
-    return crud.Saving.update_saving(db=db, user_id=user_id, id=data.id, data=data)
+    saving = crud.Saving.update_saving(
+        db=db, user_id=user_id, saving_id=saving_id, data=data
+    )
+
+    if saving is None:
+        raise HTTPException(404, detail="No savings found for this user.")
+    return saving
 
 
 @router.delete("/{user_id}", status_code=200)
 def delete_user_savings(
-    user_id: int, id_s: List[int], all: bool = False, db: Session = Depends(get_db)
+    user_id: int,
+    saving_id_s: List[int],
+    all: bool = False,
+    db: Session = Depends(get_db),
 ):
-    if crud.Saving.delete_saving(db=db, user_id=user_id, id_s=id_s, all=all):
+    if crud.Saving.delete_saving(
+        db=db, user_id=user_id, saving_id_s=saving_id_s, all=all
+    ):
         return {"msg": "Successfully deleted."}
-    return HTTPException(404, detail="Nothing to delete for this user.")
+    raise HTTPException(404, detail="Nothing to delete for this user.")
