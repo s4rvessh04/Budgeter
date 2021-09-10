@@ -2,8 +2,9 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from . import models, schemas
 from utils.password import get_password_hash
+
+from . import models, schemas
 
 
 class User:
@@ -21,13 +22,13 @@ class User:
 
     def create_user(db: Session, user: schemas.UserCreate):
         hashed_password = get_password_hash(user.password)
+
         db_user = models.User(
             name=user.name,
             username=user.username,
             email=user.email,
             hashed_password=hashed_password,
         )
-
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
@@ -35,17 +36,15 @@ class User:
 
     def update_user(user_id: int, data: schemas.UserCreate, db: Session):
         user = db.query(models.User).filter(models.User.id == user_id)
-        fake_hashed_password = {"hashed_password": f"{data.password} hashed"}
-        updated_data = data.copy(update=fake_hashed_password)
-        user.update(
-            updated_data.dict(
-                exclude={
-                    "password",
-                },
-                exclude_unset=True,
-            ),
-            synchronize_session="fetch",
-        )
+
+        if data.password:
+            hashed_password = {"hashed_password": get_password_hash(data.password)}
+            data = data.copy(update=hashed_password)
+        else:
+            user.update(
+                data.dict(exclude={"password"}, exclude_unset=True),
+                synchronize_session="fetch",
+            )
 
         db.commit()
         return user.one_or_none()
@@ -56,7 +55,6 @@ class User:
             .filter(models.User.id == user_id)
             .delete(synchronize_session="fetch")
         )
-
         db.commit()
         return deleted_rows_count
 
@@ -73,33 +71,30 @@ class Friend:
         )
 
     def check_friend_exists(db: Session, user_id: int, friend_id: int):
-        statement = (
+        friend = (
             db.query(models.Friend)
             .filter(
-                models.Friend.user_id == user_id,
-                models.Friend.friend_id == friend_id,
+                models.Friend.user_id == user_id, models.Friend.friend_id == friend_id
             )
             .one_or_none()
         )
-
-        if statement is None:
-            return statement
-        return True if statement.request_status == True else False
+        if friend is None:
+            return friend
+        return True if friend.request_status == True else False
 
     def create_friend(db: Session, user_id: int, data: schemas.FriendCreate):
         db_user_relation = models.Friend(
             user_id=user_id, friend_id=data.friend_id, request_status=True
         )
-
         db.add(db_user_relation)
         db.commit()
         db.refresh(db_user_relation)
 
         db_friend_relation = models.Friend(user_id=data.friend_id, friend_id=user_id)
-
         db.add(db_friend_relation)
         db.commit()
         db.refresh(db_friend_relation)
+
         return db_user_relation
 
     def update_friend(db: Session, user_id: int, friend_id: int):
@@ -107,18 +102,15 @@ class Friend:
             models.Friend.user_id == user_id,
             models.Friend.friend_id == friend_id,
         )
-
-        request_status = friend.one_or_none().request_status
         friend.update(
-            {"request_status": False if request_status else True},
+            {"request_status": False if friend.one_or_none().request_status else True},
             synchronize_session="fetch",
         )
-
         db.commit()
         return friend.one_or_none()
 
     def delete_friend(db: Session, user_id: int, friend_id_s: List[int]):
-        main_user_count = (
+        deleted_user_row_count = (
             db.query(models.Friend)
             .filter(
                 models.Friend.user_id == user_id,
@@ -126,7 +118,7 @@ class Friend:
             )
             .delete(synchronize_session="fetch")
         )
-        friend_user_count = (
+        deleted_friend_row_count = (
             db.query(models.Friend)
             .filter(
                 models.Friend.friend_id == user_id,
@@ -134,9 +126,8 @@ class Friend:
             )
             .delete(synchronize_session="fetch")
         )
-
         db.commit()
-        return main_user_count + friend_user_count
+        return deleted_user_row_count + deleted_friend_row_count
 
 
 class Expense:
@@ -145,15 +136,9 @@ class Expense:
 
     def create_expense(db: Session, user_id: int, expense: schemas.ExpenseCreate):
         entry = models.Expense(
-            **expense.dict(
-                exclude_unset=True,
-                exclude={
-                    "shared_expense",
-                },
-            ),
+            **expense.dict(exclude_unset=True, exclude={"shared_expense"}),
             user_id=user_id,
         )
-
         db.add(entry)
         db.commit()
         db.refresh(entry)
@@ -169,7 +154,6 @@ class Expense:
             models.Expense.user_id == user_id, models.Expense.id == id
         )
         expense.update(data.dict(exclude_unset=True), synchronize_session="fetch")
-
         db.commit()
         return expense.one_or_none()
 
@@ -181,7 +165,6 @@ class Expense:
             )
             .delete(synchronize_session="fetch")
         )
-
         db.commit()
         return deleted_rows_count
 
@@ -194,7 +177,6 @@ class SharedExpense:
 
         def enter_all():
             for member in members_and_amount:
-
                 entry = models.SharedExpense(
                     **data.dict(
                         exclude_unset=True,
@@ -205,16 +187,13 @@ class SharedExpense:
                     expense_id=expense_id,
                     main_user_id=user_id,
                 )
-
                 yield entry
 
         entries = list(enter_all())
-
         for model_instance in entries:
             db.add(model_instance)
             db.commit()
             db.refresh(model_instance)
-
         return True
 
     def read_shared_expense(db: Session, user_id: int, skip: int, limit: int):
@@ -236,9 +215,7 @@ class SharedExpense:
         shared_expense.update(
             data.dict(exclude_unset=True), synchronize_session="fetch"
         )
-
         db.commit()
-
         return shared_expense.all()
 
     def delete_shared_expense(
@@ -248,13 +225,11 @@ class SharedExpense:
             models.SharedExpense.main_user_id == user_id,
             models.SharedExpense.expense_id == expense_id,
         )
-
-        deleted_rows = main_expense.filter(
+        deleted_rows_count = main_expense.filter(
             models.SharedExpense.id.in_(shared_expense_id_s)
         ).delete(synchronize_session="fetch")
-
         db.commit()
-        return deleted_rows
+        return deleted_rows_count
 
 
 class MaxExpense:
@@ -270,7 +245,6 @@ class MaxExpense:
 
     def create_max_expense(db: Session, data: schemas.MaxExpenseCreate, user_id: int):
         entry = models.MaxExpense(**data.dict(), user_id=user_id)
-
         db.add(entry)
         db.commit()
         db.refresh(entry)
@@ -281,7 +255,6 @@ class MaxExpense:
             models.MaxExpense.user_id == user_id
         )
         user_max_expense.update({"amount": data.amount}, synchronize_session="fetch")
-
         db.commit()
         return user_max_expense.one_or_none()
 
@@ -291,7 +264,6 @@ class MaxExpense:
             .filter(models.MaxExpense.user_id == user_id)
             .delete(synchronize_session="fetch")
         )
-
         db.commit()
         return deleted_rows_count
 
@@ -305,7 +277,6 @@ class Saving:
 
     def create_saving(db: Session, user_id: int, data: schemas.SavingCreate):
         entry = models.Saving(**data.dict(), user_id=user_id)
-
         db.add(entry)
         db.commit()
         db.refresh(entry)
@@ -318,19 +289,18 @@ class Saving:
             models.Saving.user_id == user_id, models.Saving.id == saving_id
         )
         user_saving.update(data.dict(), synchronize_session="fetch")
-
         db.commit()
         return user_saving.one_or_none()
 
     def delete_saving(db: Session, user_id: int, saving_id_s: List[int], all: bool):
         if all:
-            user_savings = (
+            deleted_rows_count = (
                 db.query(models.Saving)
                 .filter(models.Saving.user_id == user_id)
                 .delete(synchronize_session="fetch")
             )
         else:
-            user_savings = (
+            deleted_rows_count = (
                 db.query(models.Saving)
                 .filter(
                     models.Saving.user_id == user_id, models.Saving.id.in_(saving_id_s)
@@ -339,7 +309,7 @@ class Saving:
             )
 
         db.commit()
-        return user_savings
+        return deleted_rows_count
 
 
 class Tag:
@@ -351,7 +321,6 @@ class Tag:
 
     def create_tag(db: Session, user_id: int, data: schemas.TagCreate):
         entry = models.Tag(**data.dict(exclude_unset=True), user_id=user_id)
-
         db.add(entry)
         db.commit()
         db.refresh(entry)
@@ -362,23 +331,22 @@ class Tag:
             models.Tag.user_id == user_id, models.Tag.id == tag_id
         )
         user_tag.update(data.dict(), synchronize_session="fetch")
-
         db.commit()
         return user_tag.one_or_none()
 
     def delete_tags(db: Session, user_id: int, tag_id_s: List[int], all: bool = False):
         if all:
-            user_tags = (
+            deleted_rows_count = (
                 db.query(models.Tag)
                 .filter(models.Tag.user_id == user_id)
                 .delete(synchronize_session=False)
             )
         else:
-            user_tags = (
+            deleted_rows_count = (
                 db.query(models.Tag)
                 .filter(models.Tag.user_id == user_id, models.Tag.id.in_(tag_id_s))
                 .delete(synchronize_session="fetch")
             )
 
         db.commit()
-        return user_tags
+        return deleted_rows_count
