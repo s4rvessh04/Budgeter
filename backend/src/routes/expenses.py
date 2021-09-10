@@ -1,86 +1,98 @@
 from . import *
+from .auth import get_current_active_user
 
 router = APIRouter()
 
 
-@router.get("/{user_id}", response_model=List[schemas.Expense])
-def read_user_expenses(user_id: int, db: Session = Depends(get_db)):
-    raw_data = crud.Expense.get_expense_by_id(db=db, user_id=user_id)
-    return raw_data
+@router.get("/", response_model=List[schemas.Expense])
+def read_user_expenses(
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    return crud.Expense.get_expense_by_id(db=db, user_id=current_user.id)
 
 
-@router.get("/{user_id}/shared", response_model=List[schemas.SharedExpense])
+@router.get("/shared", response_model=List[schemas.SharedExpense])
 def read_shared_expense(
-    user_id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    skip: int = 0,
+    limit: int = 100,
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
 ):
     return crud.SharedExpense.read_shared_expense(
-        db=db, user_id=user_id, skip=skip, limit=limit
+        db=db, user_id=current_user.id, skip=skip, limit=limit
     )
 
 
-@router.post("/{user_id}", response_model=schemas.Expense)
+@router.post("/", response_model=schemas.Expense)
 def create_expense(
-    user_id: int, data: schemas.ExpenseCreate, db: Session = Depends(get_db)
+    data: schemas.ExpenseCreate,
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
 ):
-    main_expense = crud.Expense.create_expense(db=db, user_id=user_id, expense=data)
+    main_expense = crud.Expense.create_expense(
+        db=db, user_id=current_user.id, expense=data
+    )
 
     if data.shared:
         crud.SharedExpense.create_shared_expense(
             db=db,
-            user_id=user_id,
+            user_id=current_user.id,
             data=data.shared_expense,
             expense_id=main_expense.id,
         )
+
     return main_expense
 
 
-@router.put("/{user_id}", response_model=schemas.Expense)
+@router.put("/", response_model=schemas.Expense)
 def update_expense(
-    user_id: int,
     data: schemas.ExpenseCreate,
+    current_user: schemas.User = Depends(get_current_active_user),
     expense_id: int = Query(None),
     db: Session = Depends(get_db),
 ):
     return crud.Expense.update_expense(
-        db=db, user_id=user_id, expense_id=expense_id, data=data
+        db=db, user_id=current_user.id, expense_id=expense_id, data=data
     )
 
 
-@router.put("/{user_id}/shared", response_model=schemas.SharedExpense)
+@router.put("/shared", response_model=schemas.SharedExpense)
 def update_shared_expense(
-    user_id: int,
     data: schemas.SharedExpenseCreate,
+    current_user: schemas.User = Depends(get_current_active_user),
     expense_id: int = Query(None),
     db: Session = Depends(get_db),
 ):
     return crud.SharedExpense.update_shared_expense(
-        db=db, user_id=user_id, expense_id=expense_id, data=data
+        db=db, user_id=current_user.id, expense_id=expense_id, data=data
     )
 
 
-@router.delete("/{user_id}", status_code=200)
+@router.delete("/", status_code=200)
 def delete_expense(
-    user_id: int, expense_id_s: List[int], db: Session = Depends(get_db)
+    expense_id_s: List[int],
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
 ):
     deleted_rows = crud.Expense.delete_expense(
-        db=db, user_id=user_id, expense_id_s=expense_id_s
+        db=db, user_id=current_user.id, expense_id_s=expense_id_s
     )
-
     if deleted_rows:
         return {"msg": "Successfully deleted."}
     raise HTTPException(404, detail="Nothing to delete for this user.")
 
 
-@router.delete("/{user_id}/shared", status_code=200)
+@router.delete("/shared", status_code=200)
 def delete_shared_expenses(
-    user_id: int,
     expense_id: int,
     shared_expense_id_s: List[int],
+    current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     if crud.SharedExpense.delete_shared_expense(
         db=db,
-        user_id=user_id,
+        user_id=current_user.id,
         expense_id=expense_id,
         shared_expense_id_s=shared_expense_id_s,
     ):
