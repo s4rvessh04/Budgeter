@@ -1,18 +1,20 @@
-from typing_extensions import ParamSpecKwargs
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from passlib.context import CryptContext
-from dotenv import load_dotenv
 import os
+
+from dotenv import load_dotenv
+from fastapi.security import OAuth2PasswordBearer
+from passlib.context import CryptContext
 
 load_dotenv()
 
 SECRET_KEY = os.getenv("PASSWORD_SECRET")
-ALGORITH = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+ALGORITHM = "HS256"
+
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 
 def verify_password(plain_passoword: str, hashed_password: str):
