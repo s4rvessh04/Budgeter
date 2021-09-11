@@ -37,14 +37,14 @@ class User:
     def update_user(user_id: int, data: schemas.UserCreate, db: Session):
         user = db.query(models.User).filter(models.User.id == user_id)
 
-        if data.password:
+        if data.password != None:
             hashed_password = {"hashed_password": get_password_hash(data.password)}
             data = data.copy(update=hashed_password)
-        else:
-            user.update(
-                data.dict(exclude={"password"}, exclude_unset=True),
-                synchronize_session="fetch",
-            )
+
+        user.update(
+            data.dict(exclude={"password"}, exclude_unset=True),
+            synchronize_session="fetch",
+        )
 
         db.commit()
         return user.one_or_none()
