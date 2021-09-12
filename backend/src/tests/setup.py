@@ -36,3 +36,16 @@ def delete_test_client():
         allow_redirects=True,
     )
     return response.status_code
+
+
+TOKEN = return_token()
+
+USER_TOKEN = TOKEN["access_token"]
+
+TOKEN_TYPE = TOKEN["token_type"]
+
+HEADERS = {"Authorization": f"{TOKEN_TYPE.capitalize()} {USER_TOKEN}"}
+
+
+def handle_urls(url):
+    return {"url": url, "headers": HEADERS, "allow_redirects": True}
