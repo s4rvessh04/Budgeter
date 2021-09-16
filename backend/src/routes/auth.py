@@ -5,16 +5,10 @@ from typing import Optional
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 
-from utils.password import (
-    ACCESS_TOKEN_EXPIRE_MINUTES,
-    ALGORITHM,
-    SECRET_KEY,
-    oauth2_scheme,
-    verify_password,
-)
+from utils.password import (ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY,
+                            oauth2_scheme, verify_password)
 
 from . import *
-
 
 router = APIRouter()
 
