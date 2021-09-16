@@ -1,33 +1,51 @@
 import json
 
-from .setup import client, handle_urls, delete_test_client
+from database.schemas import User, UserBase
+from .setup import client, delete_test_client, handle_urls
+
+
+def test_read_users():
+    response = client.get("api/v1/user/all")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+    assert isinstance(User(**response.json()[0]), User)
 
 
 def test_read_user():
     response = client.get(**handle_urls("/api/v1/user"))
     assert response.status_code == 200
+    assert isinstance(User(**response.json()), User)
 
 
 def test_update_user():
-    to_update_data = {"name": "new_test_user", "email": "new_test_user@example.com"}
+    test_user_data = {
+        "name": "New Test User",
+        "email": "new_test_user@example.com",
+    }
+    test_user = UserBase(**test_user_data)
     update_response = client.put(
         **handle_urls("/api/v1/user"),
-        data=json.dumps(to_update_data),
+        data=json.dumps(test_user_data),
     )
-    update_recieved_data = update_response.json()
+    updated_test_user = User(**update_response.json())
     assert update_response.status_code == 200
-    assert update_recieved_data["name"] == to_update_data["name"]
-    assert update_recieved_data["email"] == to_update_data["email"]
+    assert updated_test_user.name == test_user.name
+    assert updated_test_user.email == test_user.email
 
-    to_revert_data = {"name": "test_user", "email": "test_user@example.com"}
+    # Changing the user data to default values
+    test_user_data = {
+        "name": "Test User",
+        "email": "test_user@example.com",
+    }
+    test_user = UserBase(**test_user_data)
     revert_response = client.put(
         **handle_urls("/api/v1/user"),
-        data=json.dumps(to_revert_data),
+        data=json.dumps(test_user_data),
     )
-    update_revert_data = revert_response.json()
+    updated_test_user = User(**revert_response.json())
     assert revert_response.status_code == 200
-    assert update_revert_data["name"] == to_revert_data["name"]
-    assert update_revert_data["email"] == to_revert_data["email"]
+    assert updated_test_user.name == test_user.name
+    assert updated_test_user.email == test_user.email
 
 
 def test_delete_user():
