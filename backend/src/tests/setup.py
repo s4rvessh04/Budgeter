@@ -40,28 +40,40 @@ def override_get_db():
 
 app.dependency_overrides[get_db] = override_get_db
 
+test_user1_data = {
+    "name": "test user1",
+    "email": "test_user1@example.com",
+    "username": "test_user1",
+    "password": "test_password",
+}
 
-def create_test_client():
-    data = {
-        "name": "test user",
-        "email": "test_user@example.com",
-        "username": "test_user",
-        "password": "test_password",
-    }
-    client.post("/api/v1/user/", data=json.dumps(data))
+
+test_user2_data = {
+    "name": "test user2",
+    "email": "test_user2@example.com",
+    "username": "test_user2",
+    "password": "test_password",
+}
+
+
+def create_user(data: dict):
+    data = client.post("/api/v1/user/", data=json.dumps(data)).json()
     return data
 
 
-def return_token():
-    data = create_test_client()
+def return_token(data: dict):
     response = client.post("/api/v1/auth/token", data=data)
-    data = response.json()
-    return data
+    token_dict = response.json()
+    return token_dict
 
 
-def delete_test_client():
-    token = return_token()["access_token"]
-    token_type: str = return_token()["token_type"]
+def handle_urls(url: str, headers: dict = None):
+    return {"url": url, "headers": headers, "allow_redirects": True}
+
+
+def delete_user(token_dict: dict):
+    token: str = token_dict["access_token"]
+    token_type: str = token_dict["token_type"]
 
     headers = {"Authorization": f"{token_type.capitalize()} {token}"}
     response = client.delete(
@@ -69,14 +81,21 @@ def delete_test_client():
         headers=headers,
         allow_redirects=True,
     )
-    return response.status_code
+    return response
 
 
-token = return_token()
-user_token = token["access_token"]
-token_type = token["token_type"]
-headers = {"Authorization": f"{token_type.capitalize()} {user_token}"}
+test_user1 = create_user(test_user1_data)
+test_user1_token_dict = return_token(test_user1_data)
+test_user1_token: str = test_user1_token_dict["access_token"]
+test_user1_token_type: str = test_user1_token_dict["token_type"]
+test_user1_headers = {
+    "Authorization": f"{test_user1_token_type.capitalize()} {test_user1_token}"
+}
 
-
-def handle_urls(url):
-    return {"url": url, "headers": headers, "allow_redirects": True}
+test_user2 = create_user(test_user2_data)
+test_user2_token_dict = return_token(test_user2_data)
+test_user2_token: str = test_user2_token_dict["access_token"]
+test_user2_token_type: str = test_user2_token_dict["token_type"]
+test_user2_headers = {
+    "Authorization": f"{test_user2_token_type.capitalize()} {test_user2_token}"
+}
