@@ -147,11 +147,11 @@ class Expense:
     def update_expense(
         db: Session,
         user_id: int,
-        id: int,
+        expense_id: int,
         data: schemas.ExpenseCreate,
     ):
         expense = db.query(models.Expense).filter(
-            models.Expense.user_id == user_id, models.Expense.id == id
+            models.Expense.user_id == user_id, models.Expense.id == expense_id
         )
         expense.update(data.dict(exclude_unset=True), synchronize_session="fetch")
         db.commit()
@@ -212,11 +212,23 @@ class SharedExpense:
             models.SharedExpense.main_user_id == user_id,
             models.SharedExpense.expense_id == expense_id,
         )
+        if data.members_and_amount:
+            for member in data.members_and_amount:
+                member_expense = db.query(models.SharedExpense).filter(
+                    models.SharedExpense.main_user_id == user_id,
+                    models.SharedExpense.member_id == member,
+                )
+                member_expense.update(
+                    {"amount": data.members_and_amount[member]},
+                    synchronize_session="fetch",
+                )
+
         shared_expense.update(
-            data.dict(exclude_unset=True), synchronize_session="fetch"
+            data.dict(exclude_unset=True, exclude={"members_and_amount"}),
+            synchronize_session="fetch",
         )
         db.commit()
-        return shared_expense.all()
+        return shared_expense.one_or_none()
 
     def delete_shared_expense(
         db: Session, user_id: int, expense_id: int, shared_expense_id_s: List[int]

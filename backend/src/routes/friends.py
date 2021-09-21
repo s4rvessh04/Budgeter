@@ -45,7 +45,7 @@ def update_friend(
     )
 
 
-@router.delete("/{user_id}", status_code=200)
+@router.delete("/", status_code=200)
 def delete_friend(
     friend_id_s: List[int],
     current_user: schemas.User = Depends(get_current_active_user),
