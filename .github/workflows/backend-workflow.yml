@@ -26,10 +26,10 @@ jobs:
       uses: mirromutth/mysql-action@v1.1
       with:
         host port: 3306
-        mysql database: 'budgetapp_testdb'
-        mysql root password: 'password'
-        mysql user: 'developer'
-        mysql password: 'password'
+        mysql database: budgetapp_testdb
+        mysql root password: password
+        mysql user: developer
+        mysql password: password
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -45,6 +45,6 @@ jobs:
         DB_NAME_TESTING: budgetapp_testdb
         DB_USERNAME: developer
         DB_PASSWORD: password
-        DB_SERVER: localhost:3306
+        DB_SERVER: 0.0.0.0:3306
 
 
