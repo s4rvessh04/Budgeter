@@ -18,7 +18,7 @@ jobs:
         DB_NAME_TESTING: budgetapp_testdb
         DB_USERNAME: developer
         DB_PASSWORD: secret
-        DB_SERVER: localhost:3800
+        DB_SERVER: localhost:3306
         PASSWORD_SECRET: ${{ secrets.HashPassword }}
     steps:
     - uses: actions/checkout@v2
@@ -29,7 +29,6 @@ jobs:
     - name: Set up MySQL
       run: |
         sudo /etc/init.d/mysql start
-        mysql -e 'CREATE DATABASE ${{ env.DB_NAME }};' -u${{ env.DB_USERNAME }} -p${{ env.DB_PASSWORD }}
         mysql -e 'CREATE DATABASE ${{ env.DB_NAME_TESTING }};' -u${{ env.DB_USERNAME }} -p${{ env.DB_PASSWORD }}
     - name: Install dependencies
       run: |

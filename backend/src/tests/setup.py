@@ -20,7 +20,7 @@ db_name = os.getenv("DB_NAME_TESTING")
 SQLALCHEMY_DATABASE_URL = (
     f"mysql+mysqlconnector://{db_username}:{db_password}@{db_server}/{db_name}"
 )
-
+print(SQLALCHEMY_DATABASE_URL)
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
