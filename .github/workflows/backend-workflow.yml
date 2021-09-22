@@ -25,7 +25,10 @@ jobs:
     - name: Set up MySQL
       uses: mirromutth/mysql-action@v1.1
       with:
-        mysql root password: password
+        mysql database: 'budgetapp_testdb'
+        mysql root password: 'password'
+        mysql user: 'developer'
+        mysql password: 'password'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
