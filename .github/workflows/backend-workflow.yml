@@ -27,9 +27,9 @@ jobs:
       with:
         host port: 3306
         mysql database: budgetapp_testdb
-        mysql root password: password
+        mysql root password: root
         mysql user: developer
-        mysql password: password
+        mysql password: root
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -44,7 +44,7 @@ jobs:
       env:
         DB_NAME_TESTING: budgetapp_testdb
         DB_USERNAME: developer
-        DB_PASSWORD: password
+        DB_PASSWORD: root
         DB_SERVER: 0.0.0.0:3306
 
 
