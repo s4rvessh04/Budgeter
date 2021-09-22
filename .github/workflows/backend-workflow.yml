@@ -41,3 +41,10 @@ jobs:
     - name: Test with pytest
       run: |
         pytest backend/src
+      env:
+        DB_NAME_TESTING: 'budgetapp_testdb'
+        DB_USERNAME: 'developer'
+        DB_PASSWORD: 'password'
+        DB_SERVER: 'localhost:3800'
+
+
