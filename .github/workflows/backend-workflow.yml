@@ -20,15 +20,13 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.9
-    - name: Shutdown Ubuntu MySQL (SUDO)
-      run: sudo service mysql stop
     - name: Set up MySQL
       uses: mirromutth/mysql-action@v1.1
       with:
-        host port: 3306
+        host port: 3800
         mysql database: budgetapp_testdb
         mysql user: developer
-        mysql password: root
+        mysql password: secret
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -42,8 +40,8 @@ jobs:
         DB_NAME: budgetapp
         DB_NAME_TESTING: budgetapp_testdb
         DB_USERNAME: developer
-        DB_PASSWORD: root
-        DB_SERVER: localhost:3306
+        DB_PASSWORD: secret
+        DB_SERVER: localhost:3800
         PASSWORD_SECRET: ${{ secrets.HashPassword }}
       run: |
         pytest backend/src
