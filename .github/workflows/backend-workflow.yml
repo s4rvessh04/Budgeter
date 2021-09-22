@@ -27,7 +27,6 @@ jobs:
       with:
         host port: 3306
         mysql database: budgetapp_testdb
-        mysql root password: root
         mysql user: developer
         mysql password: root
     - name: Install dependencies
@@ -45,6 +44,4 @@ jobs:
         DB_NAME_TESTING: budgetapp_testdb
         DB_USERNAME: developer
         DB_PASSWORD: root
-        DB_SERVER: 0.0.0.0:3306
-
-
+        DB_SERVER: localhost:3306
