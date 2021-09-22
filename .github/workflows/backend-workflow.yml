@@ -38,10 +38,12 @@ jobs:
       run: |
         cd backend/src && isort . --profile black
     - name: Test with pytest
-      run: |
-        pytest backend/src
       env:
+        DB_NAME: budgetapp
         DB_NAME_TESTING: budgetapp_testdb
         DB_USERNAME: developer
         DB_PASSWORD: root
         DB_SERVER: localhost:3306
+        PASSWORD_SECRET: ${{ secrets.HashPassword }}
+      run: |
+        pytest backend/src
