@@ -24,6 +24,8 @@ jobs:
       run: sudo service mysql stop
     - name: Set up MySQL
       uses: mirromutth/mysql-action@v1.1
+      with:
+        mysql root password: password
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
