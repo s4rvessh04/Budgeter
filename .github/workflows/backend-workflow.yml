@@ -15,9 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
         DB_NAME: budgetapp
-        DB_NAME_TESTING: budgetapp_testdb
-        DB_USERNAME: developer
-        DB_PASSWORD: secret
+        DB_NAME_TESTING: test_db
+        DB_USERNAME: root
+        DB_PASSWORD: root
         DB_SERVER: localhost:3306
         PASSWORD_SECRET: ${{ secrets.HashPassword }}
     steps:
