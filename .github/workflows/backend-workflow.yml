@@ -25,6 +25,7 @@ jobs:
     - name: Set up MySQL
       uses: mirromutth/mysql-action@v1.1
       with:
+        host port: 'localhost:3800'
         mysql database: 'budgetapp_testdb'
         mysql root password: 'password'
         mysql user: 'developer'
