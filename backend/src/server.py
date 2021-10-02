@@ -2,12 +2,23 @@ from functools import lru_cache
 
 import uvicorn
 from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
 
 import config
 from database.database import SessionLocal
 from routes import auth, expenses, friends, max_expense, savings, tags, users
 
 app = FastAPI()
+
+origins = ["http://localhost:3000", "localhost:3000"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.middleware("http")
