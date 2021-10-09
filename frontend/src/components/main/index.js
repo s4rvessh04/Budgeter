@@ -4,3 +4,4 @@ export * from './Notification';
 export * from './RegisterForm';
 export * from './Toast';
 export * from './Modal';
+export * from './Navbar';

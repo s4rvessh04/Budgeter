@@ -19,12 +19,12 @@ export const InputBox = ({
 
   const handleInputClassName = (className) => {
     return String(
-      `w-full border-2 px-3 py-3 text-sm font-semibold bg-white rounded-lg border-gray-300 focus:border-gray-900 text-gray-900 ${className}`
+      `w-full border-2 px-3 py-3 text-sm font-semibold bg-white rounded-lg focus:outline-none focus:border-blue-600 border-gray-300 text-gray-900 ${className}`
     );
   };
 
   return (
-    <div className='relative text-gray-600 focus-within:text-gray-900'>
+    <div className='relative text-gray-600 focus-within:text-blue-600'>
       <label className={handleLabelClassName(labelClassName)}>
         {labelName}
       </label>

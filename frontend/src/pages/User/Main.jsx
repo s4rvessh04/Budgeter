@@ -2,13 +2,13 @@ import React, { useContext, useRef } from 'react';
 import { Redirect } from 'react-router-dom';
 import * as Hi from 'react-icons/hi';
 
+import { useFetcher } from 'hooks';
 import { UserContext } from 'context';
+import { handleApiUrl } from 'shared';
 import { ToastPortal } from 'components';
 import { ModalPortal } from 'components';
-import { useFetcher } from 'hooks';
-import { handleApiUrl } from 'shared';
 
-export const User = () => {
+export const Main = () => {
   const [, , isAuthenticated, , logout] = useContext(UserContext);
 
   const { data } = useFetcher({
@@ -38,8 +38,7 @@ export const User = () => {
   return (
     <>
       {isAuthenticated ? (
-        <div className='h-screen w-screen'>
-          <h1>This is userpage</h1>
+        <>
           <button type='submit' onClick={() => logout()}>
             Logout
           </button>
@@ -90,7 +89,7 @@ export const User = () => {
             </button>
           </div>
           {data && console.log(data)}
-        </div>
+        </>
       ) : (
         <Redirect push to='/login' />
       )}

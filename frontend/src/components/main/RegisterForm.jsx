@@ -133,7 +133,7 @@ export const RegisterForm = () => {
             />
             <button
               type='submit'
-              className='w-full py-3 mt-3 text-lg font-semibold rounded-lg bg-green-600 text-white hover:opacity-90 focus:opacity-90 focus:ring-2 ring-offset-2 ring-green-600'>
+              className='w-full py-3 mt-3 text-lg font-semibold rounded-lg bg-green-600 text-white hover:opacity-90 focus:opacity-90 focus:ring-2 ring-offset-2 ring-green-600 transition-all duration-150'>
               Sign Up
             </button>
             <h4 className='my-7 text-sm text-gray-600'>

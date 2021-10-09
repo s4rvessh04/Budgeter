@@ -6,7 +6,7 @@ export const Modal = ({
   mainMessage,
   subMessage = null,
   icon = null,
-  info = false,
+  info = true,
 }) => {
   return (
     <div
@@ -14,12 +14,7 @@ export const Modal = ({
         'h-screen w-screen overflow-hidden lg:p-0 p-2 bg-gray-900 bg-opacity-5 flex justify-center items-center animate-fadeIn-medium'
       }
       onClick={info ? null : onClose}>
-      <div
-        className='z-50 md:max-w-lg max-w-full p-5 border border-gray-300 rounded-xl shadow-xl bg-white'
-        style={{
-          height: 'fit-content',
-          width: 'fit-content',
-        }}>
+      <div className='z-50 w-max h-max md:max-w-lg max-w-full p-5 border border-gray-300 rounded-xl shadow-xl bg-white'>
         <div className='flex'>
           {icon}
           <div className=''>
