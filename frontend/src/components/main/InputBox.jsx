@@ -13,7 +13,7 @@ export const InputBox = ({
 }) => {
   const handleLabelClassName = (className) => {
     return String(
-      `absolute text-xs font-semibold px-1 transform translate-x-2 -top-2 bg-white text-current ${className}`
+      `relative text-xs font-semibold px-1 left-2.5 top-3 bg-white text-current ${className}`
     );
   };
 
@@ -24,7 +24,7 @@ export const InputBox = ({
   };
 
   return (
-    <div className='relative text-gray-600 focus-within:text-blue-600'>
+    <div className='text-gray-600 focus-within:text-blue-600'>
       <label className={handleLabelClassName(labelClassName)}>
         {labelName}
       </label>

@@ -5,42 +5,42 @@ import { InputBox } from 'components';
 
 export const NewExpense = () => {
   return (
-    <div className='flex flex-col flex-1 items-center p-5'>
+    <div className='flex flex-col flex-1 items-center p-5 overflow-auto'>
       <div className='w-1/2 px-5 py-2.5 mb-8 rounded-xl shadow-lg bg-white'>
-        <h1 className='mb-8 font-poppins font-semibold text-2xl text-gray-500'>
+        <h1 className='mb-3.5 font-poppins font-semibold text-2xl text-gray-500'>
           Expense Details
         </h1>
         <InputBox
           type='text'
           name='description'
           labelName='Description'
-          inputClassName='mb-8'
+          inputClassName='mb-4'
           required={true}
         />
         <InputBox
           type='text'
           name='tag'
           labelName='Tag'
-          inputClassName='mb-8'
+          inputClassName='mb-4'
           required={true}
         />
       </div>
       <div className='w-1/2 px-5 py-2.5 mb-8 rounded-xl shadow-lg bg-white'>
-        <h1 className='mb-8 font-poppins font-semibold text-2xl text-gray-500'>
+        <h1 className='mb-3.5 font-poppins font-semibold text-2xl text-gray-500'>
           Amount Details
         </h1>
         <InputBox
           type='text'
           name='Amount'
           labelName='Amount'
-          inputClassName='mb-8'
+          inputClassName='mb-4'
           required={true}
         />
         <InputBox
           type='text'
           name='members'
           labelName='Member(s)'
-          inputClassName='mb-5'
+          inputClassName='mb-4'
           required={true}
         />
         <button className='border p-2 mb-2.5 font-semibold text-sm rounded-md text-gray-500 hover:border-gray-500 ring-inset focus:ring-2 ring-gray-500 transition-all duration-200'>

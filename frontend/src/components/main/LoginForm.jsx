@@ -1,10 +1,12 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link, Redirect } from 'react-router-dom';
+import * as Hi from 'react-icons/hi';
 
 import { useSubmit } from 'hooks';
 import { UserContext } from 'context';
-import { InputBox } from 'components';
 import { handleApiUrl } from 'shared';
+import { InputBox } from 'components';
+import { ToastPortal } from 'components';
 
 export const LoginForm = () => {
   const [username, setUsername] = useState('');
@@ -19,29 +21,15 @@ export const LoginForm = () => {
     setPassword('');
   }, [isAuthenticated]);
 
-  // const submitLogin = async () => {
-  //   const requestOptions = {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/x-www-form-urlencoded',
-  //     },
-  //     body: JSON.stringify(
-  //       `grant_type=&username=${username}&password=${password}&scope=&client_id=&client_secret=`
-  //     ),
-  //   };
+  const toastRef = useRef();
 
-  //   const response = await fetch(handleApiUrl('/auth/token'), requestOptions);
-  //   const data = await response.json();
-
-  //   if (!response.ok) {
-  //     setErrorMessage(data.detail);
-  //     setUsername('');
-  //     setPassword('');
-  //   } else {
-  //     setIsAuthenticated(true);
-  //     setToken(data.access_token);
-  //   }
-  // };
+  const addToast = (mainMessage, subMessage, icon) => {
+    toastRef.current.addMessage({
+      mainMessage: mainMessage,
+      subMessage: subMessage,
+      icon: icon,
+    });
+  };
 
   const { submitRequest } = useSubmit({
     url: handleApiUrl('/auth/token'),
@@ -57,16 +45,26 @@ export const LoginForm = () => {
   });
 
   const submitLogin = async () => {
-    const { response, data, errorMessage } = await submitRequest();
-    if (response) {
-      if (errorMessage) {
-        setErrorMessage(errorMessage);
-        setUsername('');
-        setPassword('');
-      } else {
+    const { response, data } = await submitRequest();
+    if (!response.ok) {
+      setErrorMessage(data.detail);
+      setUsername('');
+      setPassword('');
+      addToast(
+        'Authentication Failed',
+        errorMessage,
+        <Hi.HiOutlineExclamationCircle className='flex-shrink-0 h-6 w-6 mr-3 text-red-500' />
+      );
+    } else if (response.ok) {
+      addToast(
+        'Authentication Successful',
+        'Redirecting...',
+        <Hi.HiOutlineCheckCircle className='flex-shrink-0 h-6 w-6 mr-3 text-green-400' />
+      );
+      setTimeout(() => {
         setIsAuthenticated(true);
         setToken(data.access_token);
-      }
+      }, 1700);
     }
   };
 
@@ -86,10 +84,7 @@ export const LoginForm = () => {
           <h1 className='text-2xl font-poppins font-semibold text-gray-900'>
             Budgeter
           </h1>
-          <h2 className='text-base font-semibold text-gray-500'>Login</h2>
-          <h3 className='mt-3 mb-7 text-xs font-medium text-red-500 text-center'>
-            {errorMessage}
-          </h3>
+          <h2 className='text-base font-semibold text-gray-500 mb-7'>Login</h2>
           <form action='POST' onSubmit={handleSubmit}>
             <InputBox
               name='username'
@@ -98,7 +93,7 @@ export const LoginForm = () => {
               labelName='Username'
               onChange={(e) => setUsername(e.target.value)}
               required={true}
-              inputClassName='mb-7'
+              inputClassName='mb-4'
             />
             <InputBox
               name='password'
@@ -107,7 +102,7 @@ export const LoginForm = () => {
               labelName='Password'
               onChange={(e) => setPassword(e.target.value)}
               required={true}
-              inputClassName='mb-7'
+              inputClassName='mb-4'
             />
             <button
               type='submit'
@@ -124,6 +119,7 @@ export const LoginForm = () => {
           </form>
         </div>
       )}
+      <ToastPortal ref={toastRef} />
     </>
   );
 };

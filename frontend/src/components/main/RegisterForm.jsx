@@ -82,7 +82,7 @@ export const RegisterForm = () => {
             Budgeter
           </h1>
           <h2 className='text-base font-semibold text-gray-500'>Sign Up</h2>
-          <h3 className='mt-3 mb-7 text-xs font-medium text-red-500 text-center'>
+          <h3 className='mt-3 mb-4 text-xs font-medium text-red-500 text-center'>
             {errorMessage}
           </h3>
           <form action='POST' onSubmit={handleSubmit}>
@@ -93,7 +93,7 @@ export const RegisterForm = () => {
               labelName='Name'
               onChange={(e) => setName(e.target.value)}
               required={true}
-              inputClassName='mb-7'
+              inputClassName='mb-4'
             />
             <InputBox
               name='username'
@@ -102,7 +102,7 @@ export const RegisterForm = () => {
               labelName='Username'
               onChange={(e) => setUsername(e.target.value)}
               required={true}
-              inputClassName='mb-7'
+              inputClassName='mb-4'
             />
             <InputBox
               name='email'
@@ -111,7 +111,7 @@ export const RegisterForm = () => {
               labelName='Email'
               onChange={(e) => setEmail(e.target.value)}
               required={true}
-              inputClassName='mb-7'
+              inputClassName='mb-4'
             />
             <InputBox
               name='password'
@@ -120,7 +120,7 @@ export const RegisterForm = () => {
               labelName='Password'
               onChange={(e) => setPassword(e.target.value)}
               required={true}
-              inputClassName='mb-7'
+              inputClassName='mb-4'
             />
             <InputBox
               name='confirmPassword'
@@ -129,7 +129,7 @@ export const RegisterForm = () => {
               labelName='Confirm Password'
               onChange={(e) => setConfirmPassword(e.target.value)}
               required={true}
-              inputClassName='mb-7'
+              inputClassName='mb-4'
             />
             <button
               type='submit'
