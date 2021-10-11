@@ -4,7 +4,6 @@ import { Switch, Route } from 'react-router-dom';
 import { Login } from 'pages';
 import { SignUp } from 'pages';
 import { User } from 'pages';
-import { Friends } from 'pages';
 
 function App() {
   return (
