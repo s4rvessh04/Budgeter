@@ -1,11 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import * as Hi from 'react-icons/hi';
 
-export const Navbar = ({ url }) => {
-  const [isOpen, setIsOpen] = useState(
-    window.screen.width > 768 ? true : false
-  );
+export const Navbar = ({ url, isOpen, toggle }) => {
   const iconClassName = 'h-6 w-6 m-auto';
   const links = [
     {
@@ -26,35 +23,55 @@ export const Navbar = ({ url }) => {
   ];
 
   return (
-    <nav className='h-screen w-60 bg-white border border-gray-200'>
-      <div className='w-full px-2.5 flex flex-col text-xl mt-5'>
-        <NavLink
-          exact
-          to={`${url}/new`}
-          className='w-full px-2 py-1 rounded-xl font-poppins font-semibold text-blue-600 mb-5'
-          activeClassName='font-bold bg-blue-200 transition-all duration-150'>
-          <div className='flex items-center'>
-            <div className='bg-blue-200 rounded-full p-2 mr-4'>
-              <Hi.HiPlus className={iconClassName} />
-            </div>
-            <h2>Add Entry</h2>
-          </div>
-        </NavLink>
-        {links.map((link) => (
+    <>
+      {/* Mobile Menu */}
+      <nav className='md:hidden bg-gray-800 p-3 transition duration-200 ease-in-out'>
+        <div className='flex items-center'>
+          <button className='hover:bg-gray-900 rounded-full' onClick={toggle}>
+            <Hi.HiMenu className='h-6 w-6 m-2 text-white' />
+          </button>
+          <h1 className='ml-5 text-xl font-semibold text-white font-mono'>
+            Budgeter
+          </h1>
+        </div>
+      </nav>
+
+      {/* Desktop Menu */}
+      <nav
+        className={
+          isOpen && window.innerWidth <= 768
+            ? 'h-screen w-60 bg-white border border-gray-200 absolute transform -translate-x-0 transition duration-200 ease-in-out'
+            : 'h-screen w-60 bg-white border border-gray-200 absolute transform -translate-x-full md:relative md:-translate-x-0 transition duration-200 ease-in-out'
+        }>
+        <div className='w-full px-2.5 flex flex-col text-xl mt-5'>
           <NavLink
             exact
-            to={link.to}
-            className='w-full px-2 py-1 rounded-xl font-poppins font-medium text-gray-500 mb-5'
-            activeClassName='font-bold text-gray-700 bg-gray-100 transition-all duration-150'>
+            to={`${url}/new`}
+            className='w-full px-2 py-1 rounded-xl font-poppins font-semibold text-blue-600 mb-5'
+            activeClassName='font-bold bg-blue-200 transition-all duration-150'>
             <div className='flex items-center'>
-              <div className='bg-gray-100 rounded-full p-2 mr-4'>
-                {link.icon}
+              <div className='bg-blue-200 rounded-full p-2 mr-4'>
+                <Hi.HiPlus className={iconClassName} />
               </div>
-              <h2>{link.name}</h2>
+              <h2>Add Entry</h2>
             </div>
           </NavLink>
-        ))}
-      </div>
-    </nav>
+          {links.map((link) => (
+            <NavLink
+              exact
+              to={link.to}
+              className='w-full px-2 py-1 rounded-xl font-poppins font-medium text-gray-500 mb-5'
+              activeClassName='font-bold text-gray-700 bg-gray-100 transition-all duration-150'>
+              <div className='flex items-center'>
+                <div className='bg-gray-100 rounded-full p-2 mr-4'>
+                  {link.icon}
+                </div>
+                <h2>{link.name}</h2>
+              </div>
+            </NavLink>
+          ))}
+        </div>
+      </nav>
+    </>
   );
 };
