@@ -93,7 +93,7 @@ export const Main = () => {
       ) : (
         <Redirect push to='/login' />
       )}
-      <ToastPortal ref={toastRef} />
+      <ToastPortal ref={toastRef} autoClose={true} />
       <ModalPortal ref={modalRef} />
     </>
   );
