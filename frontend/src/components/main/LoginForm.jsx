@@ -11,7 +11,7 @@ import { ToastPortal } from 'components';
 export const LoginForm = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [, setErrorMessage] = useState('');
 
   const [, setToken, isAuthenticated, setIsAuthenticated] =
     useContext(UserContext);
@@ -47,12 +47,13 @@ export const LoginForm = () => {
   const submitLogin = async () => {
     const { response, data } = await submitRequest();
     if (!response.ok) {
-      setErrorMessage(data.detail);
+      const message = data.detail;
+      setErrorMessage(message);
       setUsername('');
       setPassword('');
       addToast(
         'Authentication Failed',
-        errorMessage,
+        message,
         <Hi.HiOutlineExclamationCircle className='flex-shrink-0 h-6 w-6 mr-3 text-red-500' />
       );
     } else if (response.ok) {
@@ -119,7 +120,7 @@ export const LoginForm = () => {
           </form>
         </div>
       )}
-      <ToastPortal ref={toastRef} />
+      <ToastPortal ref={toastRef} autoClose={true} />
     </>
   );
 };

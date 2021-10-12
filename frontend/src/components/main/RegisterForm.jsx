@@ -1,10 +1,12 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import { Link, Redirect } from 'react-router-dom';
+import * as Hi from 'react-icons/hi';
 
 import { useSubmit } from 'hooks';
 import { handleApiUrl } from 'shared';
 import { UserContext } from 'context';
 import { InputBox } from 'components';
+import { ToastPortal } from 'components';
 
 export const RegisterForm = () => {
   const [data, setData] = useState(null);
@@ -16,6 +18,16 @@ export const RegisterForm = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const [, , isAuthenticated] = useContext(UserContext);
+
+  const toastRef = useRef();
+
+  const addToast = (mainMessage, subMessage, icon) => {
+    toastRef.current.addMessage({
+      mainMessage: mainMessage,
+      subMessage: subMessage,
+      icon: icon,
+    });
+  };
 
   const reqBody = JSON.stringify({
     name: name,
@@ -39,29 +51,41 @@ export const RegisterForm = () => {
     const { response, data, errorMessage } = await submitRequest();
     if (!response.ok) {
       setErrorMessage(errorMessage);
+      addToast(
+        'Registration Failed',
+        errorMessage,
+        <Hi.HiOutlineExclamationCircle className='flex-shrink-0 h-6 w-6 mr-3 text-red-500' />
+      );
     } else setData(data);
   };
-
-  // const submitRegistration = async (url) => {
-  //   const requestOptions = {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: reqBody,
-  //   };
-  //   const response = await fetch(url, requestOptions);
-  //   if (!response.ok) {
-  //     setErrorMessage(data.detail);
-  //   } else setData(await response.json());
-  // };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (password.length > 5) {
-      if (password !== confirmPassword)
+      if (password !== confirmPassword) {
         setErrorMessage('Passwords did not match.');
-      else submitRegistration();
+        addToast(
+          'Registration Failed',
+          errorMessage,
+          <Hi.HiOutlineExclamationCircle className='flex-shrink-0 h-6 w-6 mr-3 text-red-500' />
+        );
+      } else {
+        addToast(
+          'Registration Successful',
+          'Redirecting to Login...',
+          <Hi.HiOutlineCheckCircle className='flex-shrink-0 h-6 w-6 mr-3 text-green-400' />
+        );
+        setTimeout(() => {
+          submitRegistration();
+        }, 1700);
+      }
     } else {
       setErrorMessage('Length of password must be at least 8 characters');
+      addToast(
+        'Registration Failed',
+        errorMessage,
+        <Hi.HiOutlineExclamationCircle className='flex-shrink-0 h-6 w-6 mr-3 text-red-500' />
+      );
       return;
     }
   };
@@ -147,6 +171,7 @@ export const RegisterForm = () => {
           </form>
         </div>
       )}
+      <ToastPortal ref={toastRef} autoClose={true} />
     </>
   );
 };
