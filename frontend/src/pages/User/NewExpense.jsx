@@ -5,8 +5,8 @@ import { InputBox } from 'components';
 
 export const NewExpense = () => {
   return (
-    <div className='flex flex-col flex-1 items-center p-5 overflow-auto'>
-      <div className='w-1/2 px-5 py-2.5 mb-8 rounded-xl shadow-lg bg-white'>
+    <div className='flex flex-col flex-1 items-center p-5 md:max-h-screen overflow-auto'>
+      <div className='md:w-1/2 w-full px-5 py-2.5 mb-8 rounded-xl shadow-lg bg-white'>
         <h1 className='mb-3.5 font-poppins font-semibold text-2xl text-gray-500'>
           Expense Details
         </h1>
@@ -25,7 +25,7 @@ export const NewExpense = () => {
           required={true}
         />
       </div>
-      <div className='w-1/2 px-5 py-2.5 mb-8 rounded-xl shadow-lg bg-white'>
+      <div className='md:w-1/2 w-full px-5 py-2.5 mb-8 rounded-xl shadow-lg bg-white'>
         <h1 className='mb-3.5 font-poppins font-semibold text-2xl text-gray-500'>
           Amount Details
         </h1>
@@ -47,7 +47,7 @@ export const NewExpense = () => {
           Custom Split
         </button>
       </div>
-      <div className='w-1/2 px-5 py-2.5 flex justify-between rounded-xl shadow-lg bg-white border-2 border-blue-600'>
+      <div className='md:w-1/2 w-full px-5 py-2.5 flex justify-between rounded-xl shadow-lg bg-white border-2 border-blue-600'>
         <div>
           <h1 className='font-poppins font-semibold text-2xl text-gray-900'>
             Final Amount
