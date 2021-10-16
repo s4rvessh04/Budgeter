@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from 'react';
 import { UserContext } from 'context';
 
 export const useFetcher = ({ url, requestOptions = null }) => {
-  const [token] = useContext(UserContext);
+  const [token, setToken, , setIsAuthenticated] = useContext(UserContext);
   const [data, setData] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -22,8 +22,12 @@ export const useFetcher = ({ url, requestOptions = null }) => {
         requestOptions === null ? defaultRequestOptions : requestOptions
       );
       const data = await response.json();
-      if (!response.ok) setErrorMessage(data.detail);
-      else setData(data);
+      if (!response.ok) {
+        setErrorMessage(data.detail);
+        localStorage.setItem('userToken', null);
+        setToken(null);
+        setIsAuthenticated(false);
+      } else setData(data);
     };
     if (token) makeRequest();
 
