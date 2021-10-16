@@ -48,7 +48,7 @@ export const Navbar = ({ url, isOpen, toggle }) => {
             exact
             to={`${url}/new`}
             onClick={toggle}
-            className='w-full px-2 py-1 rounded-xl font-poppins font-semibold text-blue-600 mb-5'
+            className='w-full px-2 py-1 rounded-xl font-poppins font-semibold text-blue-600 mb-5 hover:bg-blue-200'
             activeClassName='font-bold bg-blue-200 transition-all duration-150'>
             <div className='flex items-center'>
               <div className='bg-blue-200 rounded-full p-2 mr-4'>
@@ -62,7 +62,7 @@ export const Navbar = ({ url, isOpen, toggle }) => {
               exact
               to={link.to}
               onClick={toggle}
-              className='w-full px-2 py-1 rounded-xl font-poppins font-medium text-gray-500 mb-5'
+              className='w-full px-2 py-1 rounded-xl font-poppins font-medium text-gray-500 mb-5 hover:bg-gray-100'
               activeClassName='font-bold text-gray-700 bg-gray-100 transition-all duration-150'>
               <div className='flex items-center'>
                 <div className='bg-gray-100 rounded-full p-2 mr-4'>
@@ -76,7 +76,7 @@ export const Navbar = ({ url, isOpen, toggle }) => {
             exact
             to={`${url}/settings`}
             onClick={toggle}
-            className='w-full px-2 py-1 rounded-xl font-poppins font-medium text-gray-500 mb-5 mt-auto'
+            className='w-full px-2 py-1 rounded-xl font-poppins font-medium text-gray-500 mb-5 mt-auto hover:bg-gray-100'
             activeClassName='font-bold text-gray-700 bg-gray-100 transition-all duration-150'>
             <div className='flex items-center'>
               <div className='bg-gray-100 rounded-full p-2 mr-4'>
