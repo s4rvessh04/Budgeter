@@ -32,7 +32,7 @@ export const useFetcher = ({ url, requestOptions = null }) => {
     if (token) makeRequest();
 
     return () => setData(null);
-  }, [token, url, requestOptions]);
+  }, [token, url, requestOptions, setIsAuthenticated, setToken]);
 
   return { data, errorMessage };
 };
