@@ -61,12 +61,47 @@ class User:
 
 class Friend:
     def get_friends_by_id(db: Session, user_id: int):
-        return db.query(models.Friend).filter(models.Friend.user_id == user_id).all()
+
+        return (
+            db.query(
+                models.Friend.request_status,
+                models.Friend.friend_id,
+                models.User.username,
+                models.User.name,
+                models.User.email,
+            )
+            .filter(models.Friend.user_id == user_id)
+            .join(
+                models.User,
+                models.Friend.friend_id == models.User.id,
+            )
+            .all()
+        )
 
     def get_friends_by_username(db: Session, username: str):
         return (
-            db.query(models.Friend)
+            db.query(
+                models.Friend.request_status,
+                models.Friend.friend_id,
+                models.User.username,
+                models.User.name,
+                models.User.email,
+            )
             .filter(models.Friend.user_id == User.get_user_by_username(db, username).id)
+            .join(
+                models.User,
+                models.Friend.friend_id == models.User.id,
+            )
+            .all()
+        )
+
+    def get_potential_friends(db: Session, user_id: int, limit: int, skip: int):
+        user_friend_id_s = db.query(models.Friend.friend_id).filter_by(user_id=user_id)
+        return (
+            db.query(models.User.username, models.User.name, models.User.email)
+            .filter(models.User.id.notin_(user_friend_id_s))
+            .offset(skip)
+            .limit(limit)
             .all()
         )
 
@@ -132,6 +167,17 @@ class Friend:
 
 class Expense:
     def get_expense_by_id(db: Session, user_id: int):
+        # sq = (
+        #     db.query(
+        #         models.SharedExpense,
+        #         models.User.name,
+        #         models.User.username,
+        #         models.User.email,
+        #     )
+        #     .filter(models.SharedExpense.main_user_id == user_id)
+        #     .join(models.User, models.User.id == models.SharedExpense.member_id)
+        #     .subquery()
+        # )
         return db.query(models.Expense).filter(models.Expense.user_id == user_id).all()
 
     def create_expense(db: Session, user_id: int, expense: schemas.ExpenseCreate):
@@ -197,9 +243,27 @@ class SharedExpense:
         return True
 
     def read_shared_expense(db: Session, user_id: int, skip: int, limit: int):
+        # This is where "owing data" is showed.
+        # Meaning when a main user creates an expense, and there are some "n" members associated with the expense,
+        # the "n" members owes "x" amount of money to main user.
+        return (
+            db.query(
+                models.SharedExpense,
+                models.User.name,
+                models.User.username,
+                models.User.email,
+            )
+            .filter(models.SharedExpense.member_id == user_id)
+            .join(models.User, models.User.id == models.SharedExpense.member_id)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+
+    def read_due_expense(db: Session, user_id: int, skip: int, limit: int):
         return (
             db.query(models.SharedExpense)
-            .filter(models.SharedExpense.member_id == user_id)
+            .filter(models.SharedExpense.main_user_id == user_id)
             .offset(skip)
             .limit(limit)
             .all()
