@@ -24,6 +24,18 @@ def read_shared_expense(
     )
 
 
+@router.get("/due", response_model=List[schemas.SharedExpense])
+def read_due_expense(
+    skip: int = 0,
+    limit: int = 100,
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    return crud.SharedExpense.read_due_expense(
+        db=db, user_id=current_user.id, skip=skip, limit=limit
+    )
+
+
 @router.post("/", response_model=schemas.Expense)
 def create_expense(
     data: schemas.ExpenseCreate,
