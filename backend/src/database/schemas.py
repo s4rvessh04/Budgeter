@@ -4,6 +4,16 @@ from typing import Dict, List, Optional
 from pydantic import BaseModel, EmailStr
 
 
+class UserBase(BaseModel):
+    name: str = None
+    username: str = None
+    email: EmailStr = None
+
+
+class UserCreate(UserBase):
+    password: str = None
+
+
 class TagBase(BaseModel):
     name: str
 
@@ -29,8 +39,7 @@ class FriendCreate(FriendBase):
     request_status: bool = False
 
 
-class Friend(FriendBase):
-    user_id: int
+class Friend(UserBase):
     friend_id: int
     request_status: bool
 
@@ -84,7 +93,7 @@ class SharedExpenseCreate(SharedExpenseBase):
     tag_id: int = None
 
 
-class SharedExpense(SharedExpenseBase):
+class SharedExpense(UserBase):
     id: int
     expense_id: int
     main_user_id: int
@@ -122,16 +131,6 @@ class Expense(ExpenseBase):
 
     class Config:
         orm_mode = True
-
-
-class UserBase(BaseModel):
-    name: str = None
-    username: str = None
-    email: EmailStr = None
-
-
-class UserCreate(UserBase):
-    password: str = None
 
 
 class User(UserBase):
