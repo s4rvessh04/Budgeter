@@ -52,9 +52,6 @@ def test_friend_relation():
     # Because the other user sent the request to this user,
     # unless this user accepts the request i.e
     # update the request_status to be True, they will not be considered friends.
-    assert user_friend.friend_id == user_friend.user_id + 1
-    # The friend id will always be one greater than the user id,
-    # at least while testing.
     assert user_friend.request_status == False
 
 
