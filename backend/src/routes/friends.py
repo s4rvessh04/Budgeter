@@ -12,6 +12,18 @@ def read_friends(
     return crud.Friend.get_friends_by_id(db, user_id=current_user.id)
 
 
+@router.get("/addFriends/", response_model=List[schemas.UserBase])
+def read_potential_friends(
+    skip: int = 0,
+    limit: int = 100,
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    return crud.Friend.get_potential_friends(
+        db=db, user_id=current_user.id, limit=limit, skip=skip
+    )
+
+
 @router.post("/", response_model=schemas.Friend)
 def create_friend(
     data: schemas.FriendCreate,
