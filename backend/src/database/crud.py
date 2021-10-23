@@ -99,7 +99,7 @@ class Friend:
         user_friend_id_s = db.query(models.Friend.friend_id).filter_by(user_id=user_id)
         return (
             db.query(models.User.username, models.User.name, models.User.email)
-            .filter(models.User.id.notin_(user_friend_id_s))
+            .filter(models.User.id.notin_(user_friend_id_s), models.User.id != user_id)
             .offset(skip)
             .limit(limit)
             .all()
