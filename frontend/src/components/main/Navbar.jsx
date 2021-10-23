@@ -25,7 +25,7 @@ export const Navbar = ({ url, isOpen, toggle }) => {
   return (
     <>
       {/* Mobile Menu */}
-      <nav className='bg-gray-800 p-3 transition duration-200 ease-in-out md:hidden'>
+      <nav className='bg-gray-800 p-3 transition duration-200 ease-in-out md:hidden fixed top-0 w-full z-20'>
         <div className='flex justify-between items-center'>
           <h1 className='text-xl font-semibold text-white font-mono'>
             Budgeter
