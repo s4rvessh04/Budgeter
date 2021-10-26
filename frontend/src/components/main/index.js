@@ -5,3 +5,5 @@ export * from './RegisterForm';
 export * from './Toast';
 export * from './Modal';
 export * from './Navbar';
+export * from './ContentContainer';
+export * from './Loader';

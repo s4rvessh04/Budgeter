@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import * as Hi from 'react-icons/hi';
+import { UserContext } from 'context';
 
-export const Navbar = ({ url, isOpen, toggle }) => {
+export const Navbar = ({ url, isOpen, toggle, type }) => {
+  const [settingsDropdown, setSettingsDropdown] = useState(false);
+  const [navLinks, setNavLinks] = useState([]);
+  const [, , , , logout] = useContext(UserContext);
+
   const iconClassName = 'h-6 w-6 m-auto';
-  const links = [
+
+  const userLinks = [
     {
       name: 'Home',
       to: `${url}`,
@@ -21,6 +27,36 @@ export const Navbar = ({ url, isOpen, toggle }) => {
       icon: <Hi.HiChartPie className={iconClassName} />,
     },
   ];
+
+  const settingsLinks = [
+    {
+      name: 'Profile',
+      to: `${url}/profile`,
+      icon: <Hi.HiUser className={iconClassName} />,
+    },
+    {
+      name: 'Account',
+      to: `${url}/account`,
+      icon: <Hi.HiIdentification className={iconClassName} />,
+    },
+    {
+      name: 'Security',
+      to: `${url}/security`,
+      icon: <Hi.HiKey className={iconClassName} />,
+    },
+  ];
+
+  useEffect(() => {
+    switch (type) {
+      case 'settings':
+        setNavLinks(settingsLinks);
+        break;
+      default:
+        setNavLinks(userLinks);
+    }
+  }, [type]);
+
+  const handleSettingsDropdown = () => setSettingsDropdown(!settingsDropdown);
 
   return (
     <>
@@ -44,25 +80,44 @@ export const Navbar = ({ url, isOpen, toggle }) => {
             : 'inset-y-0 left-0 w-60 flex flex-col bg-white border border-gray-200 absolute transform -translate-x-full md:relative md:-translate-x-0 transition duration-200 ease-in-out z-40'
         }>
         <div className='w-full px-2.5 flex flex-col text-xl mt-5 flex-1'>
-          <NavLink
-            exact
-            to={`${url}/new`}
-            onClick={toggle}
-            className='w-full px-2 py-1 rounded-xl font-poppins font-semibold text-blue-600 mb-5 hover:bg-blue-200'
-            activeClassName='font-bold bg-blue-200 transition-all duration-150'>
-            <div className='flex items-center'>
-              <div className='bg-blue-200 rounded-full p-2 mr-4'>
-                <Hi.HiPlus className={iconClassName} />
+          {type === 'main' ? (
+            <NavLink
+              exact
+              to={`${url}/new`}
+              onClick={toggle}
+              className='w-full px-2 py-1 rounded-xl font-poppins font-semibold text-blue-600 mb-5 hover:bg-blue-200'
+              activeClassName='font-bold bg-blue-200 transition-all duration-150'>
+              <div className='flex items-center'>
+                <div className='bg-blue-200 rounded-full p-2 mr-4'>
+                  <Hi.HiPlus className={iconClassName} />
+                </div>
+                <h2>Add Entry</h2>
               </div>
-              <h2>Add Entry</h2>
-            </div>
-          </NavLink>
-          {links.map((link) => (
+            </NavLink>
+          ) : type === 'settings' ? (
+            <NavLink
+              exact
+              to='/user'
+              onClick={toggle}
+              className='w-full px-2 py-1 rounded-xl font-poppins font-semibold text-gray-500 mb-5 hover:bg-gray-100'
+              activeClassName='font-bold bg-gray-100 transition-all duration-150'>
+              <div className='flex items-center'>
+                <div className='bg-gray-100 rounded-full p-2 mr-4'>
+                  <Hi.HiArrowSmLeft className={iconClassName} />
+                </div>
+                <h2>Back to Home</h2>
+              </div>
+            </NavLink>
+          ) : (
+            ''
+          )}
+
+          {navLinks.map((link) => (
             <NavLink
               exact
               to={link.to}
               onClick={toggle}
-              className='w-full px-2 py-1 rounded-xl font-poppins font-medium text-gray-500 mb-5 hover:bg-gray-100'
+              className='w-full px-2 py-1 rounded-xl font-poppins font-semibold text-gray-500 mb-5 hover:bg-gray-100'
               activeClassName='font-bold text-gray-700 bg-gray-100 transition-all duration-150'>
               <div className='flex items-center'>
                 <div className='bg-gray-100 rounded-full p-2 mr-4'>
@@ -72,19 +127,65 @@ export const Navbar = ({ url, isOpen, toggle }) => {
               </div>
             </NavLink>
           ))}
-          <NavLink
-            exact
-            to={`${url}/settings`}
-            onClick={toggle}
-            className='w-full px-2 py-1 rounded-xl font-poppins font-medium text-gray-500 mb-5 mt-auto hover:bg-gray-100'
-            activeClassName='font-bold text-gray-700 bg-gray-100 transition-all duration-150'>
-            <div className='flex items-center'>
-              <div className='bg-gray-100 rounded-full p-2 mr-4'>
-                <Hi.HiCog className={iconClassName} />
+
+          {type === 'main' ? (
+            <button
+              onClick={() => handleSettingsDropdown()}
+              className={
+                settingsDropdown
+                  ? 'w-full px-2 py-1 rounded-xl font-poppins mb-5 mt-auto hover:bg-gray-100 transition-all duration-150 font-bold text-gray-700 bg-gray-100'
+                  : 'w-full px-2 py-1 rounded-xl font-poppins font-semibold text-gray-500 mb-5 mt-auto hover:bg-gray-100 transition-all duration-150'
+              }>
+              <div className='flex items-center'>
+                <div className='bg-gray-100 rounded-full p-2 mr-4'>
+                  <Hi.HiCog className={iconClassName} />
+                </div>
+                <h2>Settings</h2>
               </div>
-              <h2>Settings</h2>
+            </button>
+          ) : type === 'settings' ? (
+            <button
+              onClick={() => logout()}
+              className='w-full px-2 py-1 rounded-xl font-poppins font-semibold text-red-500 mt-auto mb-5 hover:bg-red-100 focus:ring-2 ring-inset ring-red-200 transition-all duration-150'>
+              <div className='flex items-center'>
+                <div className='bg-red-100 rounded-full p-2 mr-4'>
+                  <Hi.HiLogout className={iconClassName} />
+                </div>
+                <h2>Logout</h2>
+              </div>
+            </button>
+          ) : (
+            ''
+          )}
+          {settingsDropdown ? (
+            <div className='absolute left-64 bottom-20 shadow-md border border-gray-200 w-56 bg-white flex flex-col rounded-xl p-2 font-poppins font-semibold transition-all duration-150'>
+              <NavLink
+                exact
+                to={`/settings`}
+                onClick={toggle && handleSettingsDropdown}
+                className='px-2 py-1.5 rounded-xl font-poppins font-semibold text-gray-500 mb-2 mt-auto hover:bg-gray-100 transition-all duration-150'
+                activeClassName='font-bold text-gray-700 bg-gray-100'>
+                <div className='flex items-center'>
+                  <div className='bg-gray-100 rounded-full p-2 mr-3'>
+                    <Hi.HiCog className='h-6 w-6 m-auto' />
+                  </div>
+                  <h2>User Settings</h2>
+                </div>
+              </NavLink>
+              <button
+                onClick={() => logout()}
+                className='w-full px-2 py-1 rounded-xl font-poppins font-semibold text-red-500 mt-auto hover:bg-red-100 focus:ring-2 ring-inset ring-red-200 transition-all duration-150'>
+                <div className='flex items-center'>
+                  <div className='bg-red-100 rounded-full p-2 mr-3'>
+                    <Hi.HiLogout className='h-5 w-5 m-auto' />
+                  </div>
+                  <h2>Logout</h2>
+                </div>
+              </button>
             </div>
-          </NavLink>
+          ) : (
+            <></>
+          )}
         </div>
         <div className='w-full flex flex-col items-center py-5 border-t border-gray-200'>
           <h2 className='font-mono font-semibold text-xl text-gray-700'>
