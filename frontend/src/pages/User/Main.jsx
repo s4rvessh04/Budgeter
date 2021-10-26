@@ -1,5 +1,6 @@
 import React, { useContext, useRef, useState } from 'react';
 import { Redirect, useHistory } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import moment from 'moment';
 import * as Hi from 'react-icons/hi';
 import * as Fa from 'react-icons/fa';
@@ -11,11 +12,12 @@ import { UserContext } from 'context';
 import { handleApiUrl } from 'shared';
 import { ToastPortal } from 'components';
 import { ModalPortal } from 'components';
+import { Loader } from 'components';
 
 export const Main = () => {
   const [toggleSearch, setToggleSearch] = useState(false);
   const [activeExpenseId, setActiveExpenseId] = useState(null);
-  const [, , isAuthenticated, , logout] = useContext(UserContext);
+  const [, , isAuthenticated, ,] = useContext(UserContext);
 
   const { data } = useFetcher({
     url: handleApiUrl('/user/'),
@@ -117,12 +119,17 @@ export const Main = () => {
     return routerHistory.push(path);
   };
 
+  const iter = [1];
+
   return (
     <>
+      <Helmet>
+        <title>Home</title>
+      </Helmet>
       {isAuthenticated ? (
-        <div className='max-h-screen overflow-y-scroll flex flex-col flex-1 md:px-6 px-4 md:py-0 py-5 md:pt-0 pt-16'>
+        <div className='max-h-screen overflow-auto flex flex-col flex-1 md:px-6 px-4 md:py-0 py-5 md:pt-0 pt-16'>
           {/* Top Cards */}
-          <div className='h-1/5 py-5 grid md:grid-cols-3 md:space-x-4 md:space-y-0 md:grid-rows-1 grid-cols-1 grid-rows-3 space-x-0 space-y-4'>
+          <div className='lg:h-1/5 py-5 lg:grid lg:grid-cols-3 lg:space-x-4 lg:space-y-0 lg:grid-rows-1 grid-cols-1 grid-rows-3 space-x-0 space-y-4'>
             {headCards.map((card) => (
               <div className='flex justify-between bg-white rounded-xl border border-gray-200 shadow-md px-5 py-2.5'>
                 <div>
@@ -152,48 +159,9 @@ export const Main = () => {
             ))}
           </div>
           {/* Bottom tables */}
-          <div className='h-4/5 md:grid md:grid-cols-3 md:space-x-4 md:space-y-0 space-y-4'>
+          <div className='lg:h-4/5 lg:grid lg:grid-cols-3 lg:space-x-4 lg:space-y-0 space-y-4'>
             {/* Expense table */}
-            <div className='md:h-auto h-96 flex flex-col bg-white col-span-2 rounded-xl border border-gray-200 md:shadow-none shadow-md md:px-2.5 px-1.5 overflow-y-auto'>
-              <div className='flex md:px-5 px-2 md:pt-5 pt-4 pb-3 font-poppins font-semibold text-sm justify-evenly text-gray-600 text-left sticky top-0 bg-white'>
-                <div className='w-1/12 md:visible invisible'>Type</div>
-                <div className='w-1/4 md:visible invisible'>Date</div>
-                <div className='w-2/5 md:visible invisible'>Description</div>
-                <div className='w-1/6 md:visible invisible'>Tag</div>
-                <div className='md:w-1/4 w-full flex justify-between items-center'>
-                  <span className='md:visible invisible'>Amount</span>
-                  <span className='md:invisible visible'>Search</span>
-                  <form
-                    action='submit'
-                    method='GET'
-                    onSubmit={(e) => e.preventDefault()}
-                    className={
-                      toggleSearch ? 'absolute w-full left-0' : 'w-min'
-                    }>
-                    <div className='relative'>
-                      <span className='absolute inset-y-0 right-0 flex items-center'>
-                        <button
-                          className='bg-gray-100 rounded-full mr-1'
-                          onClick={() => handleSearchBar()}>
-                          {toggleSearch ? (
-                            <Hi.HiX className='h-5 w-5 m-1.5' />
-                          ) : (
-                            <Hi.HiSearch className='h-5 w-5 m-1.5' />
-                          )}
-                        </button>
-                      </span>
-                      <input
-                        type='search'
-                        className={
-                          toggleSearch
-                            ? 'font-inter font-medium text-gray-600 focus:outline-none flex items-center bg-white px-4 pr-10 border-2 border-gray-200 rounded-full w-full py-2'
-                            : 'w-0'
-                        }
-                      />
-                    </div>
-                  </form>
-                </div>
-              </div>
+            <div className='lg:h-auto h-96 flex flex-col bg-white col-span-2 rounded-xl border border-gray-200 md:shadow-none shadow-md overflow-y-auto'>
               {data ? (
                 data.expenses === null || data.expenses.length === 0 ? (
                   <div className='flex flex-col flex-1 justify-center items-center'>
@@ -211,22 +179,64 @@ export const Main = () => {
                     </button>
                   </div>
                 ) : (
-                  data.expenses.map((expense) => (
-                    <div className='flex-1 overflow-y-auto'>
-                      <div
-                        className={
-                          activeExpenseId === expense.id
-                            ? 'text-sm font-medium text-gray-700 flex items-center justify-evenly md:px-5 px-3 py-2 bg-gray-100 rounded-xl cursor-pointer ring-2 ring-inset ring-gray-200'
-                            : 'text-sm font-medium text-gray-200 flex items-center justify-evenly md:px-5 px-3 py-2 hover:bg-gray-100 cursor-pointer hover:text-gray-700 rounded-xl'
-                        }
-                        onClick={() => handleActiveExpenseView(expense.id)}>
-                        <div className='w-1/12 text-gray-700'>
-                          {expense.shared ? (
-                            <Hi.HiUsers className='h-4 w-4 text-current' />
-                          ) : (
-                            <Hi.HiUser className='h-4 w-4 text-current' />
-                          )}
-                          {/* <select
+                  <>
+                    <div className='flex md:px-5 px-2 md:pt-5 pt-4 pb-3 font-poppins font-semibold text-sm justify-evenly text-gray-600 text-left sticky top-0 bg-white'>
+                      <div className='w-1/12 md:visible invisible'>Type</div>
+                      <div className='w-1/4 md:visible invisible'>Date</div>
+                      <div className='w-2/5 md:visible invisible'>
+                        Description
+                      </div>
+                      <div className='w-1/6 md:visible invisible'>Tag</div>
+                      <div className='md:w-1/4 w-full flex justify-between items-center'>
+                        <span className='md:visible invisible'>Amount</span>
+                        <span className='md:invisible visible'>Search</span>
+                        <form
+                          action='submit'
+                          method='GET'
+                          onSubmit={(e) => e.preventDefault()}
+                          className={
+                            toggleSearch ? 'absolute w-full left-0' : 'w-min'
+                          }>
+                          <div className='relative mx-1.5'>
+                            <span className='absolute inset-y-0 right-0 flex items-center'>
+                              <button
+                                className='bg-gray-100 rounded-full mr-1'
+                                onClick={() => handleSearchBar()}>
+                                {toggleSearch ? (
+                                  <Hi.HiX className='h-5 w-5 m-1.5' />
+                                ) : (
+                                  <Hi.HiSearch className='h-5 w-5 m-1.5' />
+                                )}
+                              </button>
+                            </span>
+                            <input
+                              type='search'
+                              className={
+                                toggleSearch
+                                  ? 'font-inter font-medium text-gray-600 focus:outline-none flex items-center bg-white px-4 pr-10 border-2 border-gray-200 rounded-full w-full py-2'
+                                  : 'w-0'
+                              }
+                            />
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                    <div className='flex-1 overflow-y-auto md:px-2.5 px-1.5'>
+                      {data.expenses.map((expense) => (
+                        <div
+                          className={
+                            activeExpenseId === expense.id
+                              ? 'text-sm font-medium text-gray-700 flex items-center justify-evenly md:px-5 px-3 py-2 bg-gray-100 rounded-xl cursor-pointer ring-2 ring-inset ring-gray-200'
+                              : 'text-sm font-medium text-gray-200 flex items-center justify-evenly md:px-5 px-3 py-2 hover:bg-gray-100 cursor-pointer hover:text-gray-700 rounded-xl'
+                          }
+                          onClick={() => handleActiveExpenseView(expense.id)}>
+                          <div className='w-1/12 text-gray-700'>
+                            {expense.shared ? (
+                              <Hi.HiUsers className='h-4 w-4 text-current' />
+                            ) : (
+                              <Hi.HiUser className='h-4 w-4 text-current' />
+                            )}
+                            {/* <select
                           name='members'
                           id=''
                           className='border border-gray-200 rounded-lg py-1.5 px-2 bg-transparent w-4/5 font-medium text-xs'>
@@ -236,74 +246,102 @@ export const Main = () => {
                             </option>
                           ))}
                         </select> */}
+                          </div>
+                          <div className='w-1/4 flex flex-col space-y-1'>
+                            <span className='font-bold text-gray-700'>
+                              {moment(expense.date).format('LL')}
+                            </span>
+                            <span className='text-xs font-semibold text-gray-400'>
+                              {moment(expense.date).format('LT')}
+                            </span>
+                          </div>
+                          <div className='w-2/5 text-gray-700'>
+                            {expense.description}
+                          </div>
+                          <div className='w-1/6 text-gray-700'>
+                            {expense.tag_id}
+                          </div>
+                          <div className='w-1/4 font-bold flex justify-between items-center'>
+                            <span className='text-gray-700'>
+                              ₹{expense.amount}
+                            </span>
+                            <Hi.HiChevronRight className='mr-1 h-5 w-5 text-current' />
+                          </div>
                         </div>
-                        <div className='w-1/4 flex flex-col space-y-1'>
-                          <span className='font-bold text-gray-700'>
-                            {moment(expense.date).format('LL')}
-                          </span>
-                          <span className='text-xs font-semibold text-gray-400'>
-                            {moment(expense.date).format('LT')}
-                          </span>
-                        </div>
-                        <div className='w-2/5 text-gray-700'>
-                          {expense.description}
-                        </div>
-                        <div className='w-1/6 text-gray-700'>
-                          {expense.tag_id}
-                        </div>
-                        <div className='w-1/4 font-bold flex justify-between items-center'>
-                          <span className='text-gray-700'>
-                            ₹{expense.amount}
-                          </span>
-                          <Hi.HiChevronRight className='mr-1 h-5 w-5 text-current' />
-                        </div>
+                      ))}
+                    </div>
+                    <div className='flex justify-between border-t border-gray-200 pl-5 py-2.5 font-bold text-sm text-gray-600 sticky bottom-0 w-full bg-white'>
+                      <div className='flex flex-col'>
+                        <h4 className='text-gray-700'>Total items</h4>
+                        <span className='text-gray-500'>
+                          {data.expenses.length}
+                        </span>
+                      </div>
+                      <div className='flex flex-col w-1/4'>
+                        <h4 className='text-gray-700'>Total Amount</h4>
+                        <span className='text-gray-500'>₹{3000}</span>
                       </div>
                     </div>
-                  ))
+                  </>
                 )
               ) : (
-                <div className='w-full h-full flex justify-center items-center'>
-                  <svg
-                    class='animate-spin -ml-1 mr-3 h-8 w-8 text-gray-500'
-                    xmlns='http://www.w3.org/2000/svg'
-                    fill='none'
-                    viewBox='0 0 24 24'>
-                    <circle
-                      class='opacity-25'
-                      cx='12'
-                      cy='12'
-                      r='10'
-                      stroke='currentColor'
-                      stroke-width='4'></circle>
-                    <path
-                      class='opacity-75'
-                      fill='currentColor'
-                      d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
-                  </svg>
-                  <span className='font-medium text-xl text-gray-500'>
-                    Loading
-                  </span>
-                </div>
+                <Loader name='loading' />
               )}
-              <div className='flex justify-between border-t border-gray-200 pl-5 py-1.5 font-bold text-sm text-gray-600 sticky bottom-0 w-full bg-white'>
-                <div className='flex flex-col w-1/4'>
+            </div>
+            {/* History table */}
+            <div className='lg:h-auto h-96 flex flex-col bg-white col-span-1 rounded-xl border border-gray-200 md:shadow-none shadow-md overflow-y-auto'>
+              <div className='sticky top-0 md:px-5 px-3.5 md:pt-2.5 pt-2'>
+                <h1 className='text-gray-900 font-poppins font-semibold text-xl mb-2.5'>
+                  History
+                </h1>
+                <div className='grid grid-cols-2 space-x-2.5 p-1 h-11 mb-2.5 bg-gray-100 rounded-xl w-full text-base font-semibold font-poppins sticky top-0'>
+                  <div className='bg-white flex justify-center items-center rounded-lg text-gray-700'>
+                    <h2>Yearly</h2>
+                  </div>
+                  <div className='flex justify-center items-center rounded-lg text-gray-300'>
+                    <h2>Monthly</h2>
+                  </div>
+                </div>
+                <div className='flex justify-between bg-gray-100 rounded-xl py-1 px-2.5 pl-5 mb-2.5'>
+                  <div className='text-sm'>
+                    <h5 className='text-gray-400 font-semibold'>Current</h5>
+                    <h5 className='text-gray-700 font-bold'>2021</h5>
+                  </div>
+                  <div className='text-sm flex items-center'>
+                    <h5 className='text-gray-700 mr-2.5 font-bold'>₹1000.00</h5>
+                    <div className='flex items-center bg-red-100 text-red-500 rounded-full text-xs py-0.5 px-1.5 font-semibold'>
+                      <Hi.HiChevronUp className='h-4 w-4' /> 2.5%
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className='flex-1 overflow-y-auto md:px-5 px-3.5'>
+                {iter.map(() => (
+                  <div className='flex justify-between rounded-lg py-2 px-2.5 pl-5 hover:bg-gray-100 mb-2.5 cursor-pointer'>
+                    <h5 className='text-sm text-gray-700 font-bold'>2020</h5>
+                    <div className='text-sm flex items-center'>
+                      <h5 className='text-gray-700 mr-2.5 font-bold'>
+                        ₹1000.00
+                      </h5>
+                      <div className='flex items-center bg-green-100 text-green-500 rounded-full text-xs py-0.5 px-1.5 font-semibold'>
+                        <Hi.HiChevronDown className='h-4 w-4' /> 5%
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className='flex justify-between border-t border-gray-200 md:px-5 px-3.5 md:py-2.5 py-1.5 font-bold text-sm text-gray-600 sticky bottom-0 w-full bg-white'>
+                <div className='flex flex-col'>
                   <h4 className='text-gray-700'>Total items</h4>
                   <span className='text-gray-500'>{3}</span>
                 </div>
-                <div className='flex flex-col w-1/4'>
+                <div className='flex flex-col'>
                   <h4 className='text-gray-700'>Total Amount</h4>
                   <span className='text-gray-500'>₹{3000}</span>
                 </div>
               </div>
             </div>
-            {/* History table */}
-            <div className='md:h-auto h-96 font-poppins font-semibold text-xl bg-white col-span-1 rounded-xl border border-gray-200 md:shadow-none shadow-md md:px-5 px-3.5 md:py-2.5 py-2'>
-              History
-            </div>
           </div>
-          <button type='submit' onClick={() => logout()}>
-            Logout
-          </button>
           {/* <div className='flex flex-col'>
             <button
               type='submit'

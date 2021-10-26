@@ -21,7 +21,7 @@ export const User = () => {
 
   return (
     <div className='md:flex min-h-screen relative'>
-      <Navbar url={url} isOpen={isOpen} toggle={toggle} />
+      <Navbar url={url} isOpen={isOpen} toggle={toggle} type={'main'} />
       <Switch>
         <Route path={path} exact component={Main} />
         <Route path={`${path}/new`} exact component={NewExpense} />
