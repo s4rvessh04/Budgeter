@@ -141,6 +141,7 @@ class User(UserBase):
     savings: List[Saving] = []
     tags: List[Tag] = []
     max_expense: List[MaxExpense] = []
+    shared_expenses: List[SharedExpense] = []
 
     class Config:
         orm_mode = True
