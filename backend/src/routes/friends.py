@@ -12,7 +12,23 @@ def read_friends(
     return crud.Friend.get_friends_by_id(db, user_id=current_user.id)
 
 
-@router.get("/addFriends/", response_model=List[schemas.UserBase])
+@router.get("/all", response_model=List[schemas.Friend])
+def read_all_friends(
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    return crud.Friend.get_all_friends_by_id(db, user_id=current_user.id)
+
+
+@router.get("/pending", response_model=List[schemas.Friend])
+def read_pending_friend_requests(
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    return crud.Friend.get_pending_friend_request_by_id(db, user_id=current_user.id)
+
+
+@router.get("/addFriends/", response_model=List[schemas.AddFriend])
 def read_potential_friends(
     skip: int = 0,
     limit: int = 100,
