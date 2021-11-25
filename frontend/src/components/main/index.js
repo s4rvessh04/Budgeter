@@ -7,3 +7,5 @@ export * from './Modal';
 export * from './Navbar';
 export * from './ContentContainer';
 export * from './Loader';
+export * from './Dropdown';
+export * from './ErrorPromptAction';
