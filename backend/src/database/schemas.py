@@ -47,6 +47,13 @@ class Friend(UserBase):
         orm_mode = True
 
 
+class AddFriend(UserBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
 class SavingBase(BaseModel):
     pass
 
