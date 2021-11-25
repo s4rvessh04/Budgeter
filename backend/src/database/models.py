@@ -17,17 +17,17 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
     expenses = relationship("Expense", back_populates="user", passive_deletes=True)
+    savings = relationship("Saving", back_populates="user", passive_deletes=True)
+    tags = relationship("Tag", back_populates="user", passive_deletes=True)
+    max_expense = relationship(
+        "MaxExpense", back_populates="user", passive_deletes=True
+    )
     shared_expenses = relationship(
         "SharedExpense",
         backref="SharedExpense.member_id",
         primaryjoin="User.id==SharedExpense.member_id",
         lazy="joined",
         passive_deletes=False,
-    )
-    savings = relationship("Saving", back_populates="user", passive_deletes=True)
-    tags = relationship("Tag", back_populates="user", passive_deletes=True)
-    max_expense = relationship(
-        "MaxExpense", back_populates="user", passive_deletes=True
     )
     friends = relationship(
         "Friend",
