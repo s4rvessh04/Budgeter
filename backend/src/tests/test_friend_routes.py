@@ -44,7 +44,9 @@ def test_friend_relation():
         URL: str (Authorized by token returned from handle_friend_auth method)
     """
 
-    response = client.get(**handle_urls(url=URL, headers=test_user1_headers))
+    response = client.get(
+        **handle_urls(url="api/v1/friends/pending", headers=test_user1_headers)
+    )
     # Currently authenticated user
     # Not the created friend for authenticated user
     user_friend = Friend(**response.json()[0])
