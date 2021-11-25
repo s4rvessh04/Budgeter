@@ -2,37 +2,50 @@ import { useContext, useEffect, useState } from 'react';
 
 import { UserContext } from 'context';
 
-export const useFetcher = ({ url, requestOptions = null }) => {
-  const [token, setToken, , setIsAuthenticated] = useContext(UserContext);
-  const [data, setData] = useState(null);
+export const useFetcher = ({
+  url,
+  method = 'GET',
+  headers = null,
+  body = null,
+}) => {
+  const [token] = useContext(UserContext);
+  const [data, setData] = useState([]);
+  const [isLoading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const makeRequest = async () => {
-      const defaultRequestOptions = {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          allow_redirects: true,
-          Authorization: 'Bearer ' + token,
-        },
-      };
-      const response = await fetch(
-        url,
-        requestOptions === null ? defaultRequestOptions : requestOptions
-      );
-      const data = await response.json();
-      if (!response.ok) {
-        setErrorMessage(data.detail);
-        localStorage.setItem('userToken', null);
-        setToken(null);
-        setIsAuthenticated(false);
-      } else setData(data);
+      setLoading(true);
+      try {
+        const requestOptions = {
+          method: method,
+          headers: headers
+            ? headers
+            : {
+                'Content-Type': 'application/json',
+                allow_redirects: true,
+                Authorization: 'Bearer ' + token,
+              },
+          body: body,
+        };
+        const response = await fetch(url, requestOptions);
+        if (response.ok) {
+          setData(await response.json());
+        } else {
+          setErrorMessage(await response.json().detail);
+        }
+      } catch (err) {
+        console.error(err);
+        console.log('Error Occured');
+      } finally {
+        setLoading(false);
+      }
     };
+
     if (token) makeRequest();
 
-    return () => setData(null);
-  }, [token, url, requestOptions, setIsAuthenticated, setToken]);
+    // return () => setLoading(false);
+  }, [token, url, body, headers, method]);
 
-  return { data, errorMessage };
+  return { data, errorMessage, isLoading };
 };
