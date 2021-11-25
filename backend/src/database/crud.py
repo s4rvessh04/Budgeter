@@ -42,7 +42,7 @@ class User:
             data = data.copy(update=hashed_password)
 
         user.update(
-            data.dict(exclude={"password"}, exclude_unset=True),
+            data.dict(exclude={"password"}, exclude_unset=True, exclude_none=True),
             synchronize_session="fetch",
         )
 
@@ -60,8 +60,7 @@ class User:
 
 
 class Friend:
-    def get_friends_by_id(db: Session, user_id: int):
-
+    def get_all_friends_by_id(db: Session, user_id: int):
         return (
             db.query(
                 models.Friend.request_status,
@@ -78,7 +77,7 @@ class Friend:
             .all()
         )
 
-    def get_friends_by_username(db: Session, username: str):
+    def get_pending_friend_request_by_id(db: Session, user_id: int):
         return (
             db.query(
                 models.Friend.request_status,
@@ -87,7 +86,29 @@ class Friend:
                 models.User.name,
                 models.User.email,
             )
-            .filter(models.Friend.user_id == User.get_user_by_username(db, username).id)
+            .filter(
+                models.Friend.user_id == user_id, models.Friend.request_status == False
+            )
+            .join(
+                models.User,
+                models.Friend.friend_id == models.User.id,
+            )
+            .all()
+        )
+
+    def get_friends_by_id(db: Session, user_id: int):
+
+        return (
+            db.query(
+                models.Friend.request_status,
+                models.Friend.friend_id,
+                models.User.username,
+                models.User.name,
+                models.User.email,
+            )
+            .filter(
+                models.Friend.user_id == user_id, models.Friend.request_status == True
+            )
             .join(
                 models.User,
                 models.Friend.friend_id == models.User.id,
@@ -98,7 +119,12 @@ class Friend:
     def get_potential_friends(db: Session, user_id: int, limit: int, skip: int):
         user_friend_id_s = db.query(models.Friend.friend_id).filter_by(user_id=user_id)
         return (
-            db.query(models.User.username, models.User.name, models.User.email)
+            db.query(
+                models.User.id,
+                models.User.username,
+                models.User.name,
+                models.User.email,
+            )
             .filter(models.User.id.notin_(user_friend_id_s), models.User.id != user_id)
             .offset(skip)
             .limit(limit)
