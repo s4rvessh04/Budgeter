@@ -7,6 +7,7 @@ export const Modal = ({
   subMessage = null,
   icon = null,
   info = true,
+  secondaryAction = null,
 }) => {
   return (
     <div
@@ -15,7 +16,7 @@ export const Modal = ({
       }
       onClick={info ? null : onClose}>
       <div className='z-50 w-max h-max md:max-w-lg max-w-full p-5 border border-gray-300 rounded-xl shadow-xl bg-white'>
-        <div className='flex'>
+        <div className='flex justify-center'>
           {icon}
           <div className=''>
             <div className='mb-2.5 flex justify-between items-start'>
@@ -30,16 +31,15 @@ export const Modal = ({
               </button>
             </div>
             <p className='text-md text-gray-400'>{subMessage}</p>
-            {info && (
+            {info && secondaryAction && (
               <div className='mt-4 float-right'>
                 <button
-                  className='py-1.5 px-3.5 mr-2.5 font-medium text-gray-600 border border-gray-300 rounded-md hover:border-gray-500 ring-inset focus:ring-2 ring-gray-500 transition-all duration-200'
+                  className='py-1.5 px-3.5 mr-2.5 font-medium text-gray-600 border border-gray-300 rounded-md transition-all duration-150'
                   onClick={onClose}>
+                  {' '}
                   Cancel
                 </button>
-                <button className='py-1.5 px-3.5 font-medium text-white bg-blue-600 rounded-md transition-all duration-200'>
-                  ActionName
-                </button>
+                {secondaryAction}
               </div>
             )}
           </div>

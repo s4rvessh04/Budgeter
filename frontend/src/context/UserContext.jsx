@@ -11,6 +11,10 @@ export const UserProvider = (props) => {
       localStorage.setItem('userToken', token);
       setIsAuthenticated(true);
     }
+    setTimeout(() => {
+      setIsAuthenticated(false);
+      localStorage.removeItem('userToken');
+    }, 1800000);
   }, [token]);
 
   const logout = () => {

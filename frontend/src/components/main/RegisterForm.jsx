@@ -2,14 +2,13 @@ import React, { useState, useContext, useRef } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import * as Hi from 'react-icons/hi';
 
-import { useSubmit } from 'hooks';
 import { handleApiUrl } from 'shared';
 import { UserContext } from 'context';
 import { InputBox } from 'components';
 import { ToastPortal } from 'components';
+import { useSubmit } from 'hooks';
 
 export const RegisterForm = () => {
-  const [data, setData] = useState(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
@@ -29,34 +28,32 @@ export const RegisterForm = () => {
     });
   };
 
-  const reqBody = JSON.stringify({
+  const reqBody = {
     name: name,
     username: username,
     email: email,
     password: password,
-  });
-
-  const requestOptions = {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: reqBody,
   };
 
-  const { submitRequest } = useSubmit({
+  const { submitRequest, data } = useSubmit({
     url: handleApiUrl('/user/'),
-    requestOptions: requestOptions,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', allow_redirects: true },
+    body: reqBody,
   });
 
   const submitRegistration = async () => {
-    const { response, data, errorMessage } = await submitRequest();
+    const { response, data } = await submitRequest();
     if (!response.ok) {
-      setErrorMessage(errorMessage);
+      const message = data.detail;
+      console.log(message);
+      setErrorMessage(message);
       addToast(
         'Registration Failed',
-        errorMessage,
+        message,
         <Hi.HiOutlineExclamationCircle className='flex-shrink-0 h-6 w-6 mr-3 text-red-500' />
       );
-    } else setData(data);
+    }
   };
 
   const handleSubmit = (e) => {

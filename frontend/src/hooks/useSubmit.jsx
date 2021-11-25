@@ -1,10 +1,31 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 
-export const useSubmit = ({ url, requestOptions }) => {
+import { UserContext } from 'context';
+
+export const useSubmit = ({
+  url,
+  method = 'POST',
+  headers = null,
+  body = null,
+}) => {
+  const [token] = useContext(UserContext);
   const [data, setData] = useState(null);
 
+  const defaultRequestParams = {
+    method: method,
+    headers: headers
+      ? headers
+      : {
+          'Content-Type': 'application/json',
+          allow_redirects: true,
+          Authorization: 'Bearer ' + token,
+        },
+    body: JSON.stringify(body),
+  };
+
   const submitRequest = async () => {
-    const response = await fetch(url, requestOptions);
+    const _ = await token;
+    const response = await fetch(url, defaultRequestParams);
     const data = await response.json();
 
     if (response.ok) setData(data);

@@ -16,11 +16,6 @@ export const LoginForm = () => {
   const [, setToken, isAuthenticated, setIsAuthenticated] =
     useContext(UserContext);
 
-  useEffect(() => {
-    setUsername('');
-    setPassword('');
-  }, [isAuthenticated]);
-
   const toastRef = useRef();
 
   const addToast = (mainMessage, subMessage, icon) => {
@@ -33,15 +28,13 @@ export const LoginForm = () => {
 
   const { submitRequest } = useSubmit({
     url: handleApiUrl('/auth/token'),
-    requestOptions: {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: JSON.stringify(
-        `grant_type=&username=${username}&password=${password}&scope=&client_id=&client_secret=`
-      ),
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
+    body: JSON.stringify(
+      `grant_type=&username=${username}&password=${password}&scope=&client_id=&client_secret=`
+    ),
   });
 
   const submitLogin = async () => {
@@ -73,6 +66,11 @@ export const LoginForm = () => {
     e.preventDefault();
     submitLogin();
   };
+
+  useEffect(() => {
+    setUsername('');
+    setPassword('');
+  }, [isAuthenticated]);
 
   return (
     <>

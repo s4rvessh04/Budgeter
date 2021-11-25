@@ -31,6 +31,7 @@ export const ModalPortal = forwardRef(({ autoClose, autoCloseTime }, ref) => {
             mainMessage={modal.mainMessage}
             subMessage={modal.subMessage}
             icon={modal.icon}
+            secondaryAction={modal.secondaryAction}
           />
         )}
       </div>,
