@@ -1,76 +1,187 @@
-import React from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { Redirect } from 'react-router';
 import { Helmet } from 'react-helmet';
 import * as Hi from 'react-icons/hi';
 
-import { InputBox } from 'components';
+import { useFetcher, useSubmit } from 'hooks';
+import { UserContext } from 'context';
+import { handleApiUrl } from 'shared';
+import { ToastPortal, InputBox, Dropdown } from 'components';
 
 export const NewExpense = () => {
+  const toastRef = useRef();
+  const [, setErrorMessage] = useState('');
+  const [, , isAuthenticated] = useContext(UserContext);
+  const [membersCount, setMembersCount] = useState(0);
+  const [members, setMembers] = useState([]);
+  const [amount, setAmount] = useState(0);
+  const [description, setDescription] = useState('');
+  const [tagId, setTagId] = useState(null);
+  const [shared, setShared] = useState(false);
+  const [formData, setFormData] = useState({});
+
+  const friendsList = useFetcher({
+    url: handleApiUrl('/friends/'),
+  });
+
+  const { submitRequest } = useSubmit({
+    url: handleApiUrl('/expenses/'),
+    method: 'POST',
+    body: formData,
+  });
+
+  const addToast = (mainMessage, subMessage, icon) => {
+    toastRef.current.addMessage({
+      mainMessage: mainMessage,
+      subMessage: subMessage,
+      icon: icon,
+    });
+  };
+
+  const submitForm = async () => {
+    const { response, data } = await submitRequest();
+    console.log(data, response);
+    if (!response.ok) {
+      const message = data.detail;
+      setErrorMessage(message);
+      addToast(
+        'Something went wrong',
+        message,
+        <Hi.HiOutlineExclamationCircle className='flex-shrink-0 h-6 w-6 mr-3 text-red-500' />
+      );
+    } else if (response.ok) {
+      addToast(
+        'added successful',
+        'extra message',
+        <Hi.HiOutlineCheckCircle className='flex-shrink-0 h-6 w-6 mr-3 text-green-400' />
+      );
+    }
+  };
+
+  const handleDescription = (e) => {
+    setDescription(e.target.value);
+  };
+
+  const handleAmount = (e) => {
+    setAmount(e.target.value);
+  };
+
+  const handleTag = (e) => {
+    setTagId(e.target.value);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    submitForm();
+  };
+
+  useEffect(() => {
+    let members_and_amount = {};
+    let isShared = members.length >= 1 ? true : false;
+    members.forEach(
+      (member) => (members_and_amount[member.friend_id] = amount / membersCount)
+    );
+
+    setShared(isShared);
+
+    let sharedExpenseData = {
+      members_and_amount: members_and_amount,
+      description: description,
+      tag_id: tagId,
+    };
+
+    setFormData({
+      description: description,
+      amount: amount,
+      tag_id: tagId,
+      shared: shared,
+      shared_expense: shared ? sharedExpenseData : null,
+    });
+  }, [members, shared, amount, tagId, membersCount, description]);
+
   return (
     <>
-      <Helmet>
-        <title>New-Expense</title>
-      </Helmet>
-      <div className='flex flex-col flex-1 items-center max-h-screen overflow-auto md:px-6 md:pt-0 px-4 py-5 pt-16'>
-        <div className='lg:w-1/2 w-full px-5 py-2.5 mb-8 mt-5 rounded-xl shadow-lg bg-white border border-gray-200'>
-          <h1 className='mb-3.5 font-poppins font-semibold text-2xl text-gray-500'>
-            Expense Details
-          </h1>
-          <InputBox
-            type='text'
-            name='description'
-            labelName='Description'
-            inputClassName='mb-4'
-            required={true}
-          />
-          <InputBox
-            type='text'
-            name='tag'
-            labelName='Tag'
-            inputClassName='mb-4'
-            required={true}
-          />
-        </div>
-        <div className='lg:w-1/2 w-full px-5 py-2.5 mb-8 rounded-xl shadow-lg bg-white border border-gray-200'>
-          <h1 className='mb-3.5 font-poppins font-semibold text-2xl text-gray-500'>
-            Amount Details
-          </h1>
-          <InputBox
-            type='text'
-            name='Amount'
-            labelName='Amount'
-            inputClassName='mb-4'
-            required={true}
-          />
-          <InputBox
-            type='text'
-            name='members'
-            labelName='Member(s)'
-            inputClassName='mb-4'
-            required={true}
-          />
-          <button className='border p-2 mb-2.5 font-semibold text-sm rounded-md text-gray-500 hover:border-gray-500 ring-inset focus:ring-2 ring-gray-500 transition-all duration-200'>
-            Custom Split
-          </button>
-        </div>
-        <div className='lg:w-1/2 w-full px-5 py-2.5 flex justify-between rounded-xl shadow-lg bg-white border-2 border-blue-600'>
-          <div>
-            <h1 className='font-poppins font-semibold text-2xl text-gray-900'>
-              Final Amount
-            </h1>
-            <h5 className='mb-1.5 text-xs font-semibold text-gray-400'>
-              ₹400.00 / 3
-            </h5>
-            <h3 className='mb-2.5 text-xl font-bold text-gray-600'>
-              ₹133.33 <small className='font-semibold text-current'>each</small>
-            </h3>
-          </div>
-          <div className='self-center'>
-            <button className='px-8 py-2 flex items-center rounded-lg font-poppins font-bold text-white bg-blue-600 hover:opacity-90 focus:ring-2 focus:ring-blue-600 ring-offset-2 transition-all duration-150'>
-              Confirm <Hi.HiCheck className='h-5 w-5 ml-1' />
-            </button>
-          </div>
-        </div>
-      </div>
+      {!isAuthenticated ? (
+        <Redirect push to='/login' />
+      ) : (
+        <>
+          <Helmet>
+            <title>New-Expense</title>
+          </Helmet>
+          <form
+            action='POST'
+            onSubmit={handleSubmit}
+            className='flex flex-col flex-1 items-center max-h-screen overflow-auto md:px-6 md:py-0 px-4 py-5 pt-16'>
+            <div className='lg:w-1/2 w-full px-5 py-2.5 mb-8 mt-5 rounded-xl shadow-lg bg-white border border-gray-200'>
+              <h1 className='mb-3.5 font-poppins font-semibold text-2xl text-gray-500'>
+                Expense Details
+              </h1>
+              <InputBox
+                type='text'
+                name='description'
+                labelName='Description'
+                onChange={handleDescription}
+                inputClassName='mb-4'
+                required={true}
+              />
+              <InputBox
+                type='text'
+                name='tag'
+                labelName='Tag'
+                onChange={handleTag}
+                inputClassName='mb-4'
+                required={false}
+              />
+            </div>
+            <div className='lg:w-1/2 w-full px-5 py-2.5 mb-8 rounded-xl shadow-lg bg-white border border-gray-200'>
+              <h1 className='mb-3.5 font-poppins font-semibold text-2xl text-gray-500'>
+                Amount Details
+              </h1>
+              <InputBox
+                type='text'
+                name='amount'
+                labelName='Amount'
+                onChange={handleAmount}
+                inputClassName='mb-4'
+                required={true}
+              />
+              <Dropdown
+                title='Member(s)'
+                items={!friendsList.isLoading ? friendsList.data : null}
+                setMembersCount={setMembersCount}
+                setMembers={setMembers}
+              />
+              <button className='border p-2 mb-2.5 mt-3 font-semibold text-sm rounded-md text-gray-500 hover:border-gray-500 ring-inset focus:ring-2 ring-gray-500 transition-all duration-200'>
+                Custom Split
+              </button>
+            </div>
+            <div className='lg:w-1/2 w-full px-5 py-2.5 lg:mb-0 mb-5 flex justify-between rounded-xl shadow-lg bg-white border-2 border-blue-600'>
+              <div>
+                <h1 className='font-poppins font-semibold text-2xl text-gray-900'>
+                  Final Amount
+                </h1>
+                <h5 className='mb-1.5 text-xs font-semibold text-gray-400'>
+                  ₹{amount || 0} / {membersCount}
+                </h5>
+                <h3 className='mb-2.5 text-xl font-bold text-gray-600'>
+                  ₹{(amount || 0) / membersCount}{' '}
+                  {membersCount > 1 ? (
+                    <small className='font-semibold text-current'>each</small>
+                  ) : (
+                    ''
+                  )}
+                </h3>
+              </div>
+              <div className='self-center'>
+                <button className='px-8 py-2 flex items-center rounded-lg font-poppins font-bold text-white bg-blue-600 hover:opacity-90 focus:ring-2 focus:ring-blue-600 ring-offset-2 transition-all duration-150'>
+                  Confirm <Hi.HiCheck className='h-5 w-5 ml-1' />
+                </button>
+              </div>
+            </div>
+          </form>
+          <ToastPortal ref={toastRef} autoClose={true} />
+        </>
+      )}
     </>
   );
 };
