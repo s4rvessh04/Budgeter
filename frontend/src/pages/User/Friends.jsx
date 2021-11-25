@@ -1,22 +1,81 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import * as Hi from 'react-icons/hi';
 
-import { useFetcher } from 'hooks';
+import { useFetcher, useSubmit } from 'hooks';
 import { UserContext } from 'context';
 import { handleApiUrl } from 'shared';
 import { Redirect } from 'react-router';
-import { Loader } from 'components';
+import {
+  AddFriendCard,
+  DisplayFriendCard,
+  ErrorPromptAction,
+  Loader,
+} from 'components';
 
 export const Friends = () => {
-  const [, , isAuthenticated, ,] = useContext(UserContext);
+  const [reqBody, setReqBody] = useState(null);
   const [switchPage, setSwitchPage] = useState(false);
+  const [pendingToggle, setPendingToggle] = useState(false);
+  const [newFriendRequestBody, setNewFriendReqBody] = useState(null);
+  const [friendRequestAcceptedId, setFriendRequestAcceptedId] = useState([]);
+  const [friendRequestDeniedId, setFriendRequestDeniedId] = useState([]);
+  const [pendingRequestMethod, setPendingRequestMethod] = useState('');
 
-  const { data } = useFetcher({
+  const [, , isAuthenticated, ,] = useContext(UserContext);
+
+  const { data, isLoading } = useFetcher({
     url: handleApiUrl(switchPage ? '/friends/addFriends/' : '/friends/'),
   });
 
-  const handleButton = () => setSwitchPage(!switchPage);
+  const newFriendRequest = useFetcher({
+    url: handleApiUrl('/friends/pending'),
+  });
+
+  const { submitRequest } = useSubmit({
+    method: switchPage ? 'POST' : 'DELETE',
+    url: handleApiUrl('/friends/'),
+    body: reqBody,
+  });
+
+  const pendingRequest = useSubmit({
+    method: pendingRequestMethod.toUpperCase(),
+    url: handleApiUrl('/friends/'),
+    body: newFriendRequestBody,
+  });
+
+  useEffect(() => {
+    if (reqBody) submitRequest();
+    if (newFriendRequestBody) pendingRequest.submitRequest();
+  }, [isLoading, reqBody, newFriendRequestBody]);
+
+  const handlePageToggle = () => setSwitchPage(!switchPage);
+  const handlenewFriendRequestToggle = () => setPendingToggle(!pendingToggle);
+
+  const handleSubmissions = (id) => {
+    if (switchPage) setReqBody({ friend_id: id, request_status: false });
+    else setReqBody([id]);
+  };
+
+  const handleFriendRequests = (method, id) => {
+    const reqMethod = method.toUpperCase();
+    setPendingRequestMethod(reqMethod);
+    if (reqMethod === 'PUT') {
+      setFriendRequestAcceptedId([...friendRequestAcceptedId, id]);
+      setNewFriendReqBody({ friend_id: id, request_status: true });
+    } else if (reqMethod === 'DELETE') {
+      setFriendRequestDeniedId([...friendRequestDeniedId, id]);
+      setNewFriendReqBody([id]);
+    }
+  };
+
+  const checkFriendRequestId = (id) => {
+    if (friendRequestAcceptedId.some((currentId) => currentId === id))
+      return 'inAccepted';
+    if (friendRequestDeniedId.some((currentId) => currentId === id))
+      return 'inDenied';
+    else return false;
+  };
 
   return (
     <>
@@ -44,68 +103,109 @@ export const Friends = () => {
                     ? 'bg-red-200 text-red-500 rounded-full mr-5 transition-all duration-150'
                     : 'bg-gray-200 text-gray-500 rounded-full mr-5 transition-all duration-150'
                 }
-                onClick={() => handleButton()}>
+                onClick={() => handlePageToggle()}>
                 {switchPage ? (
                   <Hi.HiX className='h-5 w-5 m-2.5' />
                 ) : (
                   <Hi.HiUserAdd className='h-5 w-5 m-2.5' />
                 )}
               </button>
-              <button className='relative bg-gray-200 text-gray-500 rounded-full'>
-                <div className='absolute right-0 h-2.5 w-2.5 bg-red-500 rounded-full'></div>
+              {/* Notification Dropdown */}
+              <button
+                className='relative bg-gray-200 text-gray-500 rounded-full'
+                onClick={() => handlenewFriendRequestToggle()}>
+                {!newFriendRequest.isLoading &&
+                newFriendRequest.data.length !== 0 ? (
+                  <div className='absolute right-0 h-2.5 w-2.5 bg-red-500 rounded-full'></div>
+                ) : (
+                  <></>
+                )}
                 <Hi.HiBell className='h-5 w-5 m-2.5' />
               </button>
+              {pendingToggle ? (
+                !newFriendRequest.isLoading &&
+                newFriendRequest.data.length === 0 ? (
+                  <div className='z-20 absolute top-14 right-6 p-4 md:w-3/12 w-6/12 bg-white border border-gray-200 shadow-sm rounded-xl text-center'>
+                    <span className='font-medium text-sm'>
+                      No Notifications
+                    </span>
+                  </div>
+                ) : (
+                  <div className='z-20 absolute top-14 right-6 p-4 md:w-3/12 w-6/12 bg-white border border-gray-200 shadow-sm rounded-xl'>
+                    {newFriendRequest.data.map((request) => (
+                      <div className='flex items-center justify-between'>
+                        <div className='flex items-center'>
+                          <img className='h-10 w-10 rounded-full mr-2.5' />
+                          <div className='flex flex-col'>
+                            <span className='text-sm font-poppins font-medium text-gray-700'>
+                              {request.name}
+                            </span>
+                            <span className='text-xs font-normal text-gray-400'>
+                              New friend request
+                            </span>
+                          </div>
+                        </div>
+                        <div className='flex space-x-2.5'>
+                          {checkFriendRequestId(request.friend_id) ===
+                          'inAccepted' ? (
+                            <h1 className='text-green-400 font-semibold text-sm'>
+                              Accepted
+                            </h1>
+                          ) : checkFriendRequestId(request.friend_id) ===
+                            'inDenied' ? (
+                            <h1 className='text-red-400 font-semibold text-sm'>
+                              Denied
+                            </h1>
+                          ) : (
+                            <>
+                              <button
+                                className='rounded-full bg-green-100 text-green-500 p-1'
+                                onClick={() =>
+                                  handleFriendRequests('PUT', request.friend_id)
+                                }>
+                                <Hi.HiCheck className='h-5 w-5' />
+                              </button>
+                              <button
+                                className='rounded-full bg-red-100 text-red-500 p-1'
+                                onClick={() =>
+                                  handleFriendRequests(
+                                    'DELETE',
+                                    request.friend_id
+                                  )
+                                }>
+                                <Hi.HiX className='h-5 w-5' />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              ) : (
+                ''
+              )}
             </div>
           </div>
           {switchPage ? (
             /* Add friends subpage */
-            data ? (
-              data === null || data.length === 0 ? (
-                <div className='flex-1 flex justify-center items-center'>
-                  <div className='flex flex-col justify-center items-center'>
-                    <div className='bg-red-100 rounded-full mb-2'>
-                      <Hi.HiOutlineEmojiSad className='h-7 w-7 m-3 text-red-500' />
-                    </div>
-                    <span className='text-red-600 font-semibold'>
-                      No Friends found
-                    </span>
-                    <button
-                      className='bg-blue-500 text-white text-base font-medium py-2 px-4 mt-2 rounded-lg hover:opacity-95 focus:ring-2 ring-inset ring-blue-600'
-                      type='submit'
-                      onClick={() => handleButton()}>
-                      Add Friends
-                    </button>
-                  </div>
-                </div>
+            !isLoading && data ? (
+              data.length === 0 ? (
+                <ErrorPromptAction
+                  buttonActionFunction={handlePageToggle}
+                  buttonText={'View my friends'}
+                  prompt={'No users found'}
+                  emoji={
+                    <Hi.HiOutlineEmojiSad className='h-7 w-7 m-3 text-red-500' />
+                  }
+                />
               ) : (
                 <div className='grid xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 grid-cols-1 px-1 md:py-2.5 py-1.5'>
                   {data.map((friend) => (
-                    <>
-                      <div className='p-5 border rounded-xl bg-white mx-2.5 my-2.5'>
-                        <div className='flex flex-col items-center'>
-                          <img
-                            className='h-12 w-12 border rounded-full mb-2.5'
-                            alt=''
-                          />
-                          <div className='flex-1 text-center mb-3'>
-                            <h1 className='font-poppins text-base font-semibold text-gray-900 mb-1'>
-                              {friend.name}
-                            </h1>
-                            <h4 className='text-xs font-medium text-gray-300'>
-                              @{friend.username}
-                            </h4>
-                          </div>
-                          {/* <div className='flex text-purple-500 mt-1 mb-2'>
-                    <Hi.HiUserGroup className='mr-1' />
-                    <p className='text-xs font-semibold'>{100}</p>
-                  </div> */}
-                        </div>
-                        <button className='flex justify-center items-center w-full font-semibold text-xs py-2 bg-blue-500 text-white rounded-md hover:opacity-90 focus:ring-2 ring-blue-300 transition-all duration-150'>
-                          <Hi.HiUserAdd className='h-5 w-5 mr-2' />
-                          <p>Send Request</p>
-                        </button>
-                      </div>
-                    </>
+                    <AddFriendCard
+                      friend={friend}
+                      handleSubmissions={handleSubmissions}
+                    />
                   ))}
                 </div>
               )
@@ -115,65 +215,23 @@ export const Friends = () => {
           ) : (
             /* Unfriend friends subpage */
             <>
-              {data ? (
-                data === null || data.length === 0 ? (
-                  <div className='flex-1 flex justify-center items-center'>
-                    <div className='flex flex-col justify-center items-center'>
-                      <div className='bg-red-100 rounded-full mb-2'>
-                        <Hi.HiOutlineEmojiSad className='h-7 w-7 m-3 text-red-500' />
-                      </div>
-                      <span className='text-red-600 font-semibold'>
-                        No Friends found
-                      </span>
-                      <button
-                        className='bg-blue-500 text-white text-base font-medium py-2 px-4 mt-2 rounded-lg hover:opacity-95 focus:ring-2 ring-inset ring-blue-600'
-                        type='submit'
-                        onClick={() => handleButton()}>
-                        Add Friends
-                      </button>
-                    </div>
-                  </div>
+              {!isLoading && data ? (
+                data.length === 0 ? (
+                  <ErrorPromptAction
+                    buttonActionFunction={handlePageToggle}
+                    buttonText={'Add friends'}
+                    prompt={'No friends found'}
+                    emoji={
+                      <Hi.HiOutlineEmojiSad className='h-7 w-7 m-3 text-red-500' />
+                    }
+                  />
                 ) : (
                   <div className='grid xl:grid-cols-4 xl:grid-rows-3 lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 px-1 py-2.5'>
                     {data.map((friend) => (
-                      <div className='p-5 border rounded-xl bg-white mx-2.5 my-2.5'>
-                        <div className='flex items-center mb-5'>
-                          <img
-                            className='h-10 w-10 border rounded-full'
-                            alt=''
-                          />
-                          <div className='flex-1 ml-5'>
-                            <h1 className='font-poppins text-base font-semibold text-gray-900'>
-                              {friend.name}
-                            </h1>
-                            <h4 className='text-xs font-medium text-gray-300'>
-                              @{friend.username}
-                            </h4>
-                          </div>
-                          {/* <div className='flex text-purple-500'>
-                                <Hi.HiUserGroup className='mr-1' />
-                                <p className='text-xs font-semibold'>100</p>
-                              </div> */}
-                        </div>
-                        <div className='flex mb-5'>
-                          <div className='flex flex-col mr-5 text-xs space-y-2.5'>
-                            <h3 className='font-medium text-gray-400'>Owned</h3>
-                            <h3 className='font-medium text-gray-400'>Due</h3>
-                          </div>
-                          <div className='flex flex-col text-xs space-y-2.5'>
-                            <h3 className='font-semibold text-gray-600'>
-                              ₹1000.00
-                            </h3>
-                            <h3 className='font-semibold text-gray-600'>
-                              ₹500.00
-                            </h3>
-                          </div>
-                        </div>
-                        <button className='flex justify-center items-center w-full font-semibold text-xs py-2 bg-red-100 text-red-500 rounded-md hover:bg-red-200 focus:ring-2 ring-red-300 transition-all duration-150'>
-                          <Hi.HiUserRemove className='h-5 w-5 mr-2' />
-                          <p>Unfriend</p>
-                        </button>
-                      </div>
+                      <DisplayFriendCard
+                        friend={friend}
+                        handleSubmissions={handleSubmissions}
+                      />
                     ))}
                   </div>
                 )
