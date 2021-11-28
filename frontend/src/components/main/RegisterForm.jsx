@@ -1,11 +1,9 @@
-import React, { useState, useContext, useRef } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import React, { useState, useRef } from 'react';
+import { Link, useHistory } from 'react-router-dom';
 import * as Hi from 'react-icons/hi';
 
 import { handleApiUrl } from 'shared';
-import { UserContext } from 'context';
-import { InputBox } from 'components';
-import { ToastPortal } from 'components';
+import { InputBox, ToastPortal } from 'components';
 import { useSubmit } from 'hooks';
 
 export const RegisterForm = () => {
@@ -16,8 +14,7 @@ export const RegisterForm = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const [, , isAuthenticated] = useContext(UserContext);
-
+  const history = useHistory();
   const toastRef = useRef();
 
   const addToast = (mainMessage, subMessage, icon) => {
@@ -35,7 +32,7 @@ export const RegisterForm = () => {
     password: password,
   };
 
-  const { submitRequest, data } = useSubmit({
+  const { submitRequest } = useSubmit({
     url: handleApiUrl('/user/'),
     method: 'POST',
     headers: { 'Content-Type': 'application/json', allow_redirects: true },
@@ -74,6 +71,7 @@ export const RegisterForm = () => {
         );
         setTimeout(() => {
           submitRegistration();
+          history.push('/login');
         }, 1700);
       }
     } else {
@@ -87,87 +85,78 @@ export const RegisterForm = () => {
     }
   };
 
-  const handleRedirect = () => {
-    return <Redirect to='/user' />;
-  };
-
   return (
     <>
-      {isAuthenticated ? (
-        handleRedirect()
-      ) : (
-        <div
-          className='xl:w-1/4 md:w-2/5 w-4/5 my-7 px-7 py-5 border rounded-2xl shadow-md bg-white border-gray-300'
-          style={{ height: 'fit-content' }}>
-          <h1 className='text-2xl font-poppins font-semibold text-gray-900'>
-            Budgeter
-          </h1>
-          <h2 className='text-base font-semibold text-gray-500'>Sign Up</h2>
-          <h3 className='mt-3 mb-4 text-xs font-medium text-red-500 text-center'>
-            {errorMessage}
-          </h3>
-          <form action='POST' onSubmit={handleSubmit}>
-            <InputBox
-              name='name'
-              type='text'
-              value={name}
-              labelName='Name'
-              onChange={(e) => setName(e.target.value)}
-              required={true}
-              inputClassName='mb-4'
-            />
-            <InputBox
-              name='username'
-              type='text'
-              value={username}
-              labelName='Username'
-              onChange={(e) => setUsername(e.target.value)}
-              required={true}
-              inputClassName='mb-4'
-            />
-            <InputBox
-              name='email'
-              type='email'
-              value={email}
-              labelName='Email'
-              onChange={(e) => setEmail(e.target.value)}
-              required={true}
-              inputClassName='mb-4'
-            />
-            <InputBox
-              name='password'
-              type='password'
-              value={password}
-              labelName='Password'
-              onChange={(e) => setPassword(e.target.value)}
-              required={true}
-              inputClassName='mb-4'
-            />
-            <InputBox
-              name='confirmPassword'
-              type='password'
-              value={confirmPassword}
-              labelName='Confirm Password'
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required={true}
-              inputClassName='mb-4'
-            />
-            <button
-              type='submit'
-              className='w-full py-3 mt-3 text-lg font-semibold rounded-lg bg-green-600 text-white hover:opacity-90 focus:opacity-90 focus:ring-2 ring-offset-2 ring-green-600 transition-all duration-150'>
-              Sign Up
-            </button>
-            <h4 className='my-7 text-sm text-gray-600'>
-              Already have an account?
-              <Link to='/login' className='text-blue-600'>
-                {' '}
-                Log In.
-              </Link>
-            </h4>
-            {data && handleRedirect()}
-          </form>
-        </div>
-      )}
+      <div
+        className='xl:w-1/4 md:w-2/5 w-4/5 my-7 px-7 py-5 border rounded-2xl shadow-md bg-white border-gray-300'
+        style={{ height: 'fit-content' }}>
+        <h1 className='text-2xl font-poppins font-semibold text-gray-900'>
+          Budgeter
+        </h1>
+        <h2 className='text-base font-semibold text-gray-500'>Sign Up</h2>
+        <h3 className='mt-3 mb-4 text-xs font-medium text-red-500 text-center'>
+          {errorMessage}
+        </h3>
+        <form action='POST' onSubmit={handleSubmit}>
+          <InputBox
+            name='name'
+            type='text'
+            value={name}
+            labelName='Name'
+            onChange={(e) => setName(e.target.value)}
+            required={true}
+            inputClassName='mb-4'
+          />
+          <InputBox
+            name='username'
+            type='text'
+            value={username}
+            labelName='Username'
+            onChange={(e) => setUsername(e.target.value)}
+            required={true}
+            inputClassName='mb-4'
+          />
+          <InputBox
+            name='email'
+            type='email'
+            value={email}
+            labelName='Email'
+            onChange={(e) => setEmail(e.target.value)}
+            required={true}
+            inputClassName='mb-4'
+          />
+          <InputBox
+            name='password'
+            type='password'
+            value={password}
+            labelName='Password'
+            onChange={(e) => setPassword(e.target.value)}
+            required={true}
+            inputClassName='mb-4'
+          />
+          <InputBox
+            name='confirmPassword'
+            type='password'
+            value={confirmPassword}
+            labelName='Confirm Password'
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required={true}
+            inputClassName='mb-4'
+          />
+          <button
+            type='submit'
+            className='w-full py-3 mt-3 text-lg font-semibold rounded-lg bg-green-600 text-white hover:opacity-90 focus:opacity-90 focus:ring-2 ring-offset-2 ring-green-600 transition-all duration-150'>
+            Sign Up
+          </button>
+          <h4 className='my-7 text-sm text-gray-600'>
+            Already have an account?
+            <Link to='/login' className='text-blue-600'>
+              {' '}
+              Log In.
+            </Link>
+          </h4>
+        </form>
+      </div>
       <ToastPortal ref={toastRef} autoClose={true} />
     </>
   );

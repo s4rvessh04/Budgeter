@@ -77,7 +77,7 @@ export const Account = () => {
 
   const handleUsername = (e) => setUsername(e.target.value);
   const handleIsDeleting = () => setIsDeleting(!isDeleting);
-  const handleAccountDelete = (e) => {
+  const handleAccountDelete = () => {
     addModal(
       'Confirm Deleting',
       'All associated data will be lost. This method is irreversible.',

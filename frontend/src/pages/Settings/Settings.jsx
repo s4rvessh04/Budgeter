@@ -22,9 +22,9 @@ export const Settings = () => {
       <Navbar url={url} isOpen={isOpen} toggle={toggle} type={'settings'} />
       <Switch>
         <Redirect from={path} exact to={`${path}/profile`} />
-        <Route path={`${path}/profile`} exact component={Profile} />
-        <Route path={`${path}/account`} exact component={Account} />
-        <Route path={`${path}/security`} exact component={Security} />
+        <Route path={`${path}/profile`} component={Profile} />
+        <Route path={`${path}/account`} component={Account} />
+        <Route path={`${path}/security`} component={Security} />
       </Switch>
     </div>
   );

@@ -1,20 +1,28 @@
-import React from 'react';
-import { Switch, Route } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { Switch, Route, Redirect } from 'react-router-dom';
 
-import { Login } from 'pages';
-import { SignUp } from 'pages';
-import { User } from 'pages';
-import { Settings } from 'pages';
+import { Login, SignUp, User, Settings } from 'pages';
+import { UserContext } from 'context/UserContext';
 
 function App() {
+  const [, , isAuthenticated] = useContext(UserContext);
   return (
     <>
       <div className='subpixel-antialiased font-inter bg-gray-100'>
         <Switch>
-          <Route path='/signup' exact component={SignUp} />
-          <Route path='/login' exact component={Login} />
-          <Route path='/user' component={User} />
-          <Route path='/settings' component={Settings} />
+          <Route
+            path='/'
+            exact
+            render={() => <h1 className='text-center text-9xl'>Homepage</h1>}
+          />
+          <Route path='/login'>
+            {!isAuthenticated ? <Login /> : <Redirect to='/user' />}
+          </Route>
+          <Route path='/signup'>
+            {!isAuthenticated ? <SignUp /> : <Redirect to='/user' />}
+          </Route>
+          <Route path='/user'>{isAuthenticated && <User />}</Route>
+          <Route path='/settings'>{isAuthenticated && <Settings />}</Route>
         </Switch>
       </div>
     </>

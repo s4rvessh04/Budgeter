@@ -24,8 +24,8 @@ export const User = () => {
       <Navbar url={url} isOpen={isOpen} toggle={toggle} type={'main'} />
       <Switch>
         <Route path={path} exact component={Main} />
-        <Route path={`${path}/new`} exact component={NewExpense} />
-        <Route path={`${path}/friends`} exact component={Friends} />
+        <Route path={`${path}/new`} component={NewExpense} />
+        <Route path={`${path}/friends`} component={Friends} />
       </Switch>
     </div>
   );
