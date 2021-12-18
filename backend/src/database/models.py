@@ -17,7 +17,6 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
     expenses = relationship("Expense", back_populates="user", passive_deletes=True)
-    savings = relationship("Saving", back_populates="user", passive_deletes=True)
     tags = relationship("Tag", back_populates="user", passive_deletes=True)
     max_expense = relationship(
         "MaxExpense", back_populates="user", passive_deletes=True
@@ -96,17 +95,6 @@ class SharedExpense(Base):
     )
 
     expense = relationship("Expense", back_populates="shared_expenses")
-
-
-class Saving(Base):
-    __tablename__ = "savings"
-
-    id = Column(Integer, primary_key=True, index=True)
-    date = Column(DateTime, index=True)
-    amount = Column(DECIMAL(19, 4), default=0.00)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
-
-    user = relationship("User", back_populates="savings")
 
 
 class Tag(Base):
