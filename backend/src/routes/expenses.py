@@ -1,4 +1,3 @@
-from sqlalchemy.sql.expression import false
 from . import *
 from .auth import get_current_active_user
 
@@ -92,7 +91,7 @@ def update_expense(
     )
 
 
-@router.put("/shared", response_model=schemas.SharedExpense)
+@router.put("/shared", response_model=schemas.SharedExpenseStructure)
 def update_shared_expense(
     data: schemas.SharedExpenseCreate,
     current_user: schemas.User = Depends(get_current_active_user),

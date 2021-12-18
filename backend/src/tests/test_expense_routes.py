@@ -1,6 +1,6 @@
 import json
 
-from database.schemas import Expense, SharedExpense, User
+from database.schemas import Expense, SharedExpenseStructure, User
 
 from .setup import client, handle_urls, test_user1_headers
 
@@ -86,7 +86,7 @@ def test_update_shared_expense():
         ),
         data=json.dumps(data),
     )
-    updated_expense = SharedExpense(**response.json())
+    updated_expense = SharedExpenseStructure(**response.json())
     assert updated_expense.description == data["description"]
     assert updated_expense.amount == 2000.21
 
