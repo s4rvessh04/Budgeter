@@ -1,3 +1,4 @@
+from sqlalchemy.sql.expression import false
 from . import *
 from .auth import get_current_active_user
 
@@ -6,21 +7,43 @@ router = APIRouter()
 
 @router.get("/", response_model=List[schemas.Expense])
 def read_user_expenses(
+    day: str = None,
+    month: str = None,
+    year: str = None,
+    skip: int = 0,
+    limit: int = 100,
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    return crud.Expense.get_expense_by_id(db=db, user_id=current_user.id)
+    return crud.Expense.get_expense_by_id(
+        db=db,
+        user_id=current_user.id,
+        day=day,
+        month=month,
+        year=year,
+        skip=skip,
+        limit=limit,
+    )
 
 
 @router.get("/shared", response_model=List[schemas.SharedExpense])
 def read_shared_expense(
+    day: str = None,
+    month: str = None,
+    year: str = None,
     skip: int = 0,
     limit: int = 100,
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     return crud.SharedExpense.read_shared_expense(
-        db=db, user_id=current_user.id, skip=skip, limit=limit
+        db=db,
+        user_id=current_user.id,
+        day=day,
+        month=month,
+        year=year,
+        skip=skip,
+        limit=limit,
     )
 
 
