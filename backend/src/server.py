@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import config
 from database.database import SessionLocal
-from routes import auth, expenses, friends, max_expense, savings, tags, users
+from routes import auth, expenses, friends, max_expense, tags, users
 
 app = FastAPI()
 
@@ -55,11 +55,6 @@ app.include_router(
     max_expense.router,
     prefix=handle_url("/max_expense"),
     tags=["max_expense"],
-)
-app.include_router(
-    savings.router,
-    prefix=handle_url("/savings"),
-    tags=["savings"],
 )
 app.include_router(
     tags.router,
