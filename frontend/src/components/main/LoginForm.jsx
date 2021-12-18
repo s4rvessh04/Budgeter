@@ -75,7 +75,7 @@ export const LoginForm = () => {
   return (
     <>
       <div
-        className='xl:w-1/4 md:w-2/5 w-4/5 my-7 px-7 py-5 border rounded-2xl shadow-md bg-white border-gray-300'
+        className='xl:w-1/4 lg:w-2/5 md:w-3/4 w-4/5 my-7 px-7 py-5 border rounded-2xl shadow-md bg-white border-gray-300'
         style={{ height: 'fit-content' }}>
         <h1 className='text-2xl font-poppins font-semibold text-gray-900'>
           Budgeter

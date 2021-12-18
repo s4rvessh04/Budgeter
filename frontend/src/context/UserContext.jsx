@@ -16,7 +16,7 @@ export const UserProvider = (props) => {
     setTimeout(() => {
       setIsAuthenticated(false);
       localStorage.removeItem('userToken');
-      history.push('/login');
+      history.push('/');
     }, 1800000);
   }, [token]);
 
@@ -24,7 +24,7 @@ export const UserProvider = (props) => {
     localStorage.setItem('userToken', null);
     setIsAuthenticated(false);
     localStorage.clear();
-    history.push('/login');
+    history.push('/');
   };
 
   return (

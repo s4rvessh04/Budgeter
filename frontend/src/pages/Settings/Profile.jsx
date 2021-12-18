@@ -60,7 +60,7 @@ export const Profile = () => {
     if (email && email.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i)) {
       return true;
     }
-    if (name && name.match(/^([a-z0-9]{5,})$/)) {
+    if (name && name.match(/^[a-zA-Z0-9]+([_ -]?[a-zA-Z0-9])*$/)) {
       return true;
     }
     return false;
@@ -68,12 +68,11 @@ export const Profile = () => {
 
   const handleForm = async (e) => {
     e.preventDefault();
-    if (!handleFormValidation()) {
+    if (handleFormValidation()) {
       const userRequest = name || email ? await user.submitRequest() : false;
       const userMaxExpenseRequest = maxExpense
         ? await userMaxExpense.submitRequest()
         : false;
-
       addToast(
         'Updated Successfully',
         'Refresh to see changes.',
@@ -141,7 +140,7 @@ export const Profile = () => {
             style={{ lineHeight: '150%' }}>
             Max expense will be responsible for all the calculations of change
             in savings, expenses and history of expenses choose the value
-            wisely. You can’t leave this value to 0 or less.
+            wisely. You can't leave this value to 0 or less.
           </div>
           <button
             type='submit'

@@ -150,6 +150,7 @@ export const NewExpense = () => {
                 items={!friendsList.isLoading ? friendsList.data : null}
                 setMembersCount={setMembersCount}
                 setMembers={setMembers}
+                multiselect={true}
               />
               <button className='border p-2 mb-2.5 mt-3 font-semibold text-sm rounded-md text-gray-500 hover:border-gray-500 ring-inset focus:ring-2 ring-gray-500 transition-all duration-200'>
                 Custom Split

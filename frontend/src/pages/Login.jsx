@@ -9,7 +9,7 @@ export const Login = () => {
       <Helmet>
         <title>Login - Budgeter</title>
       </Helmet>
-      <div className='h-screen w-screen flex justify-center overflow-auto'>
+      <div className='h-screen w-screen flex justify-center overflow-auto bg-gradient-to-br from-red-100 via-purple-50 to-green-100'>
         <LoginForm />
       </div>
     </>

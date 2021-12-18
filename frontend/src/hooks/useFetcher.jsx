@@ -44,7 +44,7 @@ export const useFetcher = ({
 
     if (token) makeRequest();
 
-    // return () => setLoading(false);
+    return () => setData([]);
   }, [token, url, body, headers, method]);
 
   return { data, errorMessage, isLoading };
