@@ -1,6 +1,8 @@
 from typing import List
 
+from sqlalchemy import extract
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.elements import and_, or_
 
 from utils.password import get_password_hash
 
@@ -192,19 +194,51 @@ class Friend:
 
 
 class Expense:
-    def get_expense_by_id(db: Session, user_id: int):
-        # sq = (
-        #     db.query(
-        #         models.SharedExpense,
-        #         models.User.name,
-        #         models.User.username,
-        #         models.User.email,
-        #     )
-        #     .filter(models.SharedExpense.main_user_id == user_id)
-        #     .join(models.User, models.User.id == models.SharedExpense.member_id)
-        #     .subquery()
-        # )
-        return db.query(models.Expense).filter(models.Expense.user_id == user_id).all()
+    def get_expense_by_id(
+        db: Session,
+        user_id: int,
+        year: str,
+        month: str,
+        day: str,
+        skip: int,
+        limit: int,
+    ):
+        if not year and not month and not day:
+            return (
+                db.query(models.Expense)
+                .filter(models.Expense.user_id == user_id)
+                .offset(skip)
+                .limit(limit)
+                .all()
+            )
+        if day:
+            return (
+                db.query(models.Expense)
+                .filter(models.Expense.user_id == user_id)
+                .filter(
+                    and_(
+                        extract("year", models.Expense.date) == year,
+                        extract("month", models.Expense.date) == month,
+                        extract("day", models.Expense.date) == day,
+                    )
+                )
+                .offset(skip)
+                .limit(limit)
+                .all()
+            )
+        return (
+            db.query(models.Expense)
+            .filter(models.Expense.user_id == user_id)
+            .filter(
+                or_(
+                    extract("year", models.Expense.date) == year,
+                    extract("month", models.Expense.date) == month,
+                )
+            )
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     def create_expense(db: Session, user_id: int, expense: schemas.ExpenseCreate):
         entry = models.Expense(
@@ -268,10 +302,54 @@ class SharedExpense:
             db.refresh(model_instance)
         return True
 
-    def read_shared_expense(db: Session, user_id: int, skip: int, limit: int):
+    def read_shared_expense(
+        db: Session,
+        user_id: int,
+        day: int,
+        month: int,
+        year: int,
+        skip: int,
+        limit: int,
+    ):
         # This is where "owing data" is showed.
         # Meaning when a main user creates an expense, and there are some "n" members associated with the expense,
         # the "n" members owes "x" amount of money to main user.
+
+        if not year and not month and not day:
+            return (
+                db.query(
+                    models.SharedExpense,
+                    models.User.name,
+                    models.User.username,
+                    models.User.email,
+                )
+                .filter(models.SharedExpense.member_id == user_id)
+                .join(models.User, models.User.id == models.SharedExpense.member_id)
+                .offset(skip)
+                .limit(limit)
+                .all()
+            )
+        if day:
+            return (
+                db.query(
+                    models.SharedExpense,
+                    models.User.name,
+                    models.User.username,
+                    models.User.email,
+                )
+                .filter(models.SharedExpense.member_id == user_id)
+                .filter(
+                    and_(
+                        extract("year", models.SharedExpense.date) == year,
+                        extract("month", models.SharedExpense.date) == month,
+                        extract("day", models.SharedExpense.date) == day,
+                    )
+                )
+                .join(models.User, models.User.id == models.SharedExpense.member_id)
+                .offset(skip)
+                .limit(limit)
+                .all()
+            )
         return (
             db.query(
                 models.SharedExpense,
@@ -280,6 +358,12 @@ class SharedExpense:
                 models.User.email,
             )
             .filter(models.SharedExpense.member_id == user_id)
+            .filter(
+                or_(
+                    extract("year", models.SharedExpense.date) == year,
+                    extract("month", models.SharedExpense.date) == month,
+                )
+            )
             .join(models.User, models.User.id == models.SharedExpense.member_id)
             .offset(skip)
             .limit(limit)
@@ -366,50 +450,6 @@ class MaxExpense:
             .filter(models.MaxExpense.user_id == user_id)
             .delete(synchronize_session="fetch")
         )
-        db.commit()
-        return deleted_rows_count
-
-
-class Saving:
-    def read_savings(db: Session, skip: int = 0, limit: int = 100):
-        return db.query(models.Saving).offset(skip).limit(limit).all()
-
-    def read_saving(db: Session, user_id: int):
-        return db.query(models.Saving).filter(models.Saving.user_id == user_id).all()
-
-    def create_saving(db: Session, user_id: int, data: schemas.SavingCreate):
-        entry = models.Saving(**data.dict(), user_id=user_id)
-        db.add(entry)
-        db.commit()
-        db.refresh(entry)
-        return entry
-
-    def update_saving(
-        db: Session, user_id: int, saving_id: int, data: schemas.SavingCreate
-    ):
-        user_saving = db.query(models.Saving).filter(
-            models.Saving.user_id == user_id, models.Saving.id == saving_id
-        )
-        user_saving.update(data.dict(), synchronize_session="fetch")
-        db.commit()
-        return user_saving.one_or_none()
-
-    def delete_saving(db: Session, user_id: int, saving_id_s: List[int], all: bool):
-        if all:
-            deleted_rows_count = (
-                db.query(models.Saving)
-                .filter(models.Saving.user_id == user_id)
-                .delete(synchronize_session="fetch")
-            )
-        else:
-            deleted_rows_count = (
-                db.query(models.Saving)
-                .filter(
-                    models.Saving.user_id == user_id, models.Saving.id.in_(saving_id_s)
-                )
-                .delete(synchronize_session="fetch")
-            )
-
         db.commit()
         return deleted_rows_count
 
