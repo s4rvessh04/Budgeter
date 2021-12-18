@@ -54,25 +54,6 @@ class AddFriend(UserBase):
         orm_mode = True
 
 
-class SavingBase(BaseModel):
-    pass
-
-
-class SavingCreate(SavingBase):
-    date: datetime = None
-    amount: float = None
-
-
-class Saving(SavingBase):
-    id: int
-    user_id: int
-    date: datetime = None
-    amount: float
-
-    class Config:
-        orm_mode = True
-
-
 class MaxExpenseBase(BaseModel):
     pass
 
@@ -100,7 +81,7 @@ class SharedExpenseCreate(SharedExpenseBase):
     tag_id: int = None
 
 
-class SharedExpense(UserBase):
+class SharedExpenseStructure(SharedExpenseBase):
     id: int
     expense_id: int
     main_user_id: int
@@ -109,6 +90,16 @@ class SharedExpense(UserBase):
     description: str
     date: datetime
     tag_id: int = None
+
+    class Config:
+        orm_mode = True
+
+
+class SharedExpense(SharedExpenseBase):
+    SharedExpense: SharedExpenseStructure = None
+    name: str
+    username: str
+    email: str
 
     class Config:
         orm_mode = True
@@ -134,7 +125,7 @@ class Expense(ExpenseBase):
     amount: float
     tag_id: int = None
     shared: bool
-    shared_expenses: List[SharedExpense] = []
+    shared_expenses: List[SharedExpenseStructure] = []
 
     class Config:
         orm_mode = True
@@ -145,10 +136,9 @@ class User(UserBase):
     is_active: bool
     friends: List[Friend] = []
     expenses: List[Expense] = []
-    savings: List[Saving] = []
     tags: List[Tag] = []
     max_expense: List[MaxExpense] = []
-    shared_expenses: List[SharedExpense] = []
+    shared_expenses: List[SharedExpenseStructure] = []
 
     class Config:
         orm_mode = True
