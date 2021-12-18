@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Switch, Route, Redirect } from 'react-router-dom';
 
-import { Login, SignUp, User, Settings } from 'pages';
+import { ErrorPage, Login, SignUp, User, Settings, Homepage } from 'pages';
 import { UserContext } from 'context/UserContext';
 
 function App() {
@@ -10,11 +10,9 @@ function App() {
     <>
       <div className='subpixel-antialiased font-inter bg-gray-100'>
         <Switch>
-          <Route
-            path='/'
-            exact
-            render={() => <h1 className='text-center text-9xl'>Homepage</h1>}
-          />
+          <Route path='/' exact>
+            {!isAuthenticated ? <Homepage /> : <Redirect to='/user' />}
+          </Route>
           <Route path='/login'>
             {!isAuthenticated ? <Login /> : <Redirect to='/user' />}
           </Route>
@@ -23,6 +21,7 @@ function App() {
           </Route>
           <Route path='/user'>{isAuthenticated && <User />}</Route>
           <Route path='/settings'>{isAuthenticated && <Settings />}</Route>
+          <Route path='*' component={ErrorPage} />
         </Switch>
       </div>
     </>
