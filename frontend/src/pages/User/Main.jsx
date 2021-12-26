@@ -44,7 +44,7 @@ export const Main = () => {
   });
 
   const expenseFetcher = useFetcher({
-    url: handleApiUrl(`/expenses?month=${currentMonth}`),
+    url: handleApiUrl(`/expenses/?month=${currentMonth}`),
   });
 
   const maxExpenseFetcher = useFetcher({
@@ -58,11 +58,11 @@ export const Main = () => {
   };
 
   useEffect(() => {
-    const getExpenses = async () => {
-      const expenses = await expenseFetcher.data;
-      const sharedExpenses = await sharedExpenseFetcher.data;
-      const maxExpense = await maxExpenseFetcher.data;
-      const allSharedExpense = await allSharedExpenseFetcher.data;
+    const getExpenses = () => {
+      const expenses = expenseFetcher.data;
+      const sharedExpenses = sharedExpenseFetcher.data;
+      const maxExpense = maxExpenseFetcher.data;
+      const allSharedExpense = allSharedExpenseFetcher.data;
 
       const calculateLending = (l) => {
         let sum = 0;
@@ -95,8 +95,11 @@ export const Main = () => {
         setExpenseTotalAmount(
           allExpenses.length === 1
             ? allExpenses[0].amount
-            : allExpenses.reduce((exp1, exp2) => exp1.amount + exp2.amount)
+            : allExpenses
+                .map((exp) => exp.amount)
+                .reduce((amount1, amount2) => amount1 + amount2)
         );
+
         setExpenseData(
           allExpenses.sort(
             (exp1, exp2) => new Date(exp2.date) - new Date(exp1.date)
@@ -159,8 +162,8 @@ export const Main = () => {
         get badge() {
           const percentageIncDec = this.percentage.split('%')[0];
           return handleBadges(
-            percentageIncDec > 0 ? 'down' : 'up',
-            percentageIncDec > 0 ? 'down' : 'up'
+            percentageIncDec < 0 ? 'up' : 'down',
+            percentageIncDec > 100 ? 'down' : 'up'
           );
         },
       },
@@ -171,13 +174,13 @@ export const Main = () => {
             onClick={handleLendBorrowToggle}>
             {lendBorrowToggle ? (
               <span className='flex items-center'>
-                Total Borrowing{' '}
-                <Hi.HiChevronDown className='ml-1.5 h-4 w-4 mt-0.5' />
+                Total Borrowing
+                <Hi.HiChevronUp className='ml-1.5 h-5 w-5 mt-0.5' />
               </span>
             ) : (
               <span className='flex items-center'>
-                Total Lending{' '}
-                <Hi.HiChevronUp className='ml-1.5 h-4 w-4 mt-0.5' />
+                Total Lending
+                <Hi.HiChevronDown className='ml-1.5 h-5 w-5 mt-0.5' />
               </span>
             )}
           </button>
