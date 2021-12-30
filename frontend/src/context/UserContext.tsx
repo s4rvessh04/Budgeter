@@ -18,7 +18,7 @@ export const UserProvider: FC = ({ children }) => {
       localStorage.removeItem('userToken');
       history.push('/');
     }, 1800000);
-  }, [token]);
+  }, [token, history]);
 
   const logout = (): void => {
     localStorage.setItem('userToken', '');
