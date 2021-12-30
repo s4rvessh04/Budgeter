@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import * as Hi from 'react-icons/hi';
@@ -17,6 +11,7 @@ import { useFetcher } from 'hooks';
 import { handleApiUrl } from 'shared';
 import {
   ErrorPromptAction,
+  ExpenseEditingContainer,
   Loader,
   ModalPortal,
   ToastPortal,
@@ -121,6 +116,7 @@ export const Main = () => {
     sharedExpenseFetcher.data,
     expenseFetcher.data,
     maxExpenseFetcher.data,
+    allSharedExpenseFetcher.data,
     sharedExpenseFetcher.isLoading,
     expenseFetcher.isLoading,
     maxExpenseFetcher.isLoading,
@@ -303,104 +299,117 @@ export const Main = () => {
                 />
               ) : (
                 <>
-                  <div className='flex md:px-5 px-2 md:pt-5 pt-4 pb-3 font-poppins font-semibold text-sm justify-evenly text-gray-600 text-left sticky top-0 bg-white'>
-                    <div className='w-1/12 md:visible invisible'>Type</div>
-                    <div className='w-1/4 md:visible invisible'>Date</div>
-                    <div className='w-2/5 md:visible invisible'>
-                      Description
-                    </div>
-                    <div className='w-1/6 md:visible invisible'>Tag</div>
-                    <div className='md:w-1/4 w-full flex justify-between items-center'>
-                      <span className='md:visible invisible'>Amount</span>
-                      <span className='md:invisible visible'>Search</span>
-                      <form
-                        action='submit'
-                        method='GET'
-                        onSubmit={(e) => e.preventDefault()}
-                        className={
-                          toggleSearch ? 'absolute w-full left-0' : 'w-min'
-                        }>
-                        <div className='relative mx-1.5'>
-                          <span className='absolute inset-y-0 right-0 flex items-center'>
-                            <button
-                              className='bg-gray-100 rounded-full mr-1'
-                              onClick={() => handleSearchBar()}>
-                              {toggleSearch ? (
-                                <Hi.HiX className='h-5 w-5 m-1.5' />
-                              ) : (
-                                <Hi.HiSearch className='h-5 w-5 m-1.5' />
-                              )}
-                            </button>
-                          </span>
-                          <input
-                            type='search'
+                  {activeExpenseId ? (
+                    <ExpenseEditingContainer
+                      updateExpenseId={setActiveExpenseId}
+                      expense={expenseData
+                        .filter((expense) => expense.id === activeExpenseId)
+                        .pop()}
+                    />
+                  ) : (
+                    <>
+                      <div className='flex md:px-5 px-2 md:pt-5 pt-4 pb-3 font-poppins font-semibold text-sm justify-evenly text-gray-600 text-left sticky top-0 bg-white'>
+                        <div className='w-1/12 md:visible invisible'>Type</div>
+                        <div className='w-1/4 md:visible invisible'>Date</div>
+                        <div className='w-2/5 md:visible invisible'>
+                          Description
+                        </div>
+                        <div className='w-1/6 md:visible invisible'>Tag</div>
+                        <div className='md:w-1/4 w-full flex justify-between items-center'>
+                          <span className='md:visible invisible'>Amount</span>
+                          <span className='md:invisible visible'>Search</span>
+                          <form
+                            action='submit'
+                            method='GET'
+                            onSubmit={(e) => e.preventDefault()}
                             className={
-                              toggleSearch
-                                ? 'font-inter font-medium text-gray-600 focus:outline-none flex items-center bg-white px-4 pr-10 border-2 border-gray-200 rounded-full w-full py-2'
-                                : 'w-0'
-                            }
-                          />
+                              toggleSearch ? 'absolute w-full left-0' : 'w-min'
+                            }>
+                            <div className='relative mx-1.5'>
+                              <span className='absolute inset-y-0 right-0 flex items-center'>
+                                <button
+                                  className='bg-gray-100 rounded-full mr-1'
+                                  onClick={() => handleSearchBar()}>
+                                  {toggleSearch ? (
+                                    <Hi.HiX className='h-5 w-5 m-1.5' />
+                                  ) : (
+                                    <Hi.HiSearch className='h-5 w-5 m-1.5' />
+                                  )}
+                                </button>
+                              </span>
+                              <input
+                                type='search'
+                                className={
+                                  toggleSearch
+                                    ? 'font-inter font-medium text-gray-600 focus:outline-none flex items-center bg-white px-4 pr-10 border-2 border-gray-200 rounded-full w-full py-2'
+                                    : 'w-0'
+                                }
+                              />
+                            </div>
+                          </form>
                         </div>
-                      </form>
-                    </div>
-                  </div>
-                  <div className='flex-1 overflow-y-auto md:px-2.5 px-1.5'>
-                    {expenseData.map((expense) => (
-                      <>
-                        <div
-                          className={
-                            activeExpenseId === expense.id
-                              ? 'text-sm font-medium text-gray-700 flex items-center justify-evenly md:px-5 px-3 py-2 bg-gray-100 rounded-xl cursor-pointer ring-2 ring-inset ring-gray-200'
-                              : 'text-sm font-medium text-gray-200 flex items-center justify-evenly md:px-5 px-3 py-2 hover:bg-gray-100 cursor-pointer hover:text-gray-700 rounded-xl'
-                          }
-                          onClick={() => handleActiveExpenseView(expense.id)}>
-                          <div className='w-1/12 text-gray-700'>
-                            {expense.shared || expense.expense_id ? (
-                              <Hi.HiUsers className='h-4 w-4 text-current' />
-                            ) : (
-                              <Hi.HiUser className='h-4 w-4 text-current' />
-                            )}
-                          </div>
-                          <div className='w-1/4 flex flex-col space-y-1'>
-                            <span className='font-bold text-gray-700'>
-                              {moment(expense.date).local().format('LL')}
-                            </span>
-                            <span className='text-xs font-semibold text-gray-400'>
-                              {moment(moment.utc(expense.date))
-                                .local()
-                                .format('LT')}
-                            </span>
-                          </div>
-                          <div className='w-2/5 text-gray-700'>
-                            {expense.description}
-                          </div>
-                          <div className='w-1/6 text-gray-700'>
-                            {expense.tag_id}
-                          </div>
-                          <div className='w-1/4 font-bold flex justify-between items-center'>
-                            <span className='text-gray-700'>
-                              ₹{expense.amount}
-                            </span>
-                            <Hi.HiChevronRight className='mr-1 h-5 w-5 text-current' />
-                          </div>
+                      </div>
+                      <div className='flex-1 overflow-y-auto md:px-2.5 px-1.5'>
+                        {expenseData.map((expense) => (
+                          <>
+                            <div
+                              className={
+                                activeExpenseId === expense.id
+                                  ? 'text-sm font-medium text-gray-700 flex items-center justify-evenly md:px-5 px-3 py-2 bg-gray-100 rounded-xl cursor-pointer ring-2 ring-inset ring-gray-200'
+                                  : 'text-sm font-medium text-gray-200 flex items-center justify-evenly md:px-5 px-3 py-2 hover:bg-gray-100 cursor-pointer hover:text-gray-700 rounded-xl'
+                              }
+                              onClick={() =>
+                                handleActiveExpenseView(expense.id)
+                              }>
+                              <div className='w-1/12 text-gray-700'>
+                                {expense.shared || expense.expense_id ? (
+                                  <Hi.HiUsers className='h-4 w-4 text-current' />
+                                ) : (
+                                  <Hi.HiUser className='h-4 w-4 text-current' />
+                                )}
+                              </div>
+                              <div className='w-1/4 flex flex-col space-y-1'>
+                                <span className='font-bold text-gray-700'>
+                                  {moment(expense.date).local().format('LL')}
+                                </span>
+                                <span className='text-xs font-semibold text-gray-400'>
+                                  {moment(moment.utc(expense.date))
+                                    .local()
+                                    .format('LT')}
+                                </span>
+                              </div>
+                              <div className='w-2/5 text-gray-700'>
+                                {expense.description}
+                              </div>
+                              <div className='w-1/6 text-gray-700'>
+                                {expense.tag_id}
+                              </div>
+                              <div className='w-1/4 font-bold flex justify-between items-center'>
+                                <span className='text-gray-700'>
+                                  ₹{expense.amount}
+                                </span>
+                                <Hi.HiChevronRight className='mr-1 h-5 w-5 text-current' />
+                              </div>
+                            </div>
+                          </>
+                        ))}
+                      </div>
+                      <div className='flex justify-between border-t border-gray-200 pl-5 py-2.5 font-bold text-sm text-gray-600 sticky bottom-0 w-full bg-white'>
+                        <div className='flex flex-col'>
+                          <h4 className='text-gray-700'>Total items</h4>
+                          <span className='text-gray-500'>
+                            {expenseData.length}
+                          </span>
                         </div>
-                      </>
-                    ))}
-                  </div>
-                  <div className='flex justify-between border-t border-gray-200 pl-5 py-2.5 font-bold text-sm text-gray-600 sticky bottom-0 w-full bg-white'>
-                    <div className='flex flex-col'>
-                      <h4 className='text-gray-700'>Total items</h4>
-                      <span className='text-gray-500'>
-                        {expenseData.length}
-                      </span>
-                    </div>
-                    <div className='flex flex-col w-1/4'>
-                      <h4 className='text-gray-700'>Total Amount</h4>
-                      <span className='text-gray-500'>
-                        ₹{expenseTotalAmount}
-                      </span>
-                    </div>
-                  </div>
+                        <div className='flex flex-col w-1/4'>
+                          <h4 className='text-gray-700'>Total Amount</h4>
+                          <span className='text-gray-500'>
+                            ₹{expenseTotalAmount}
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </>
               )
             ) : (

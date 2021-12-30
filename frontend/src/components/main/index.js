@@ -9,3 +9,4 @@ export * from './ContentContainer';
 export * from './Loader';
 export * from './Dropdown';
 export * from './ErrorPromptAction';
+export * from './ExpenseEditingContainer';
