@@ -10,6 +10,7 @@ export const InputBox = ({
   labelName,
   onChange,
   required,
+  disabled = false,
 }) => {
   const handleLabelClassName = (className) => {
     return String(
@@ -36,6 +37,7 @@ export const InputBox = ({
           placeholder={placeholder}
           onChange={onChange}
           required
+          disabled={disabled}
           className={handleInputClassName(inputClassName)}
         />
       ) : (
@@ -45,6 +47,7 @@ export const InputBox = ({
           value={value}
           placeholder={placeholder}
           onChange={onChange}
+          disabled={disabled}
           className={handleInputClassName(inputClassName)}
         />
       )}
