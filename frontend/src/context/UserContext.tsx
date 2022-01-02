@@ -4,7 +4,9 @@ import { useHistory } from 'react-router-dom';
 export const UserContext = createContext<Array<any>>([]);
 
 export const UserProvider: FC = ({ children }) => {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('userToken'));
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem('userToken')
+  );
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const history = useHistory();
 
@@ -30,7 +32,7 @@ export const UserProvider: FC = ({ children }) => {
   return (
     <UserContext.Provider
       value={[token, setToken, isAuthenticated, setIsAuthenticated, logout]}>
-      { children }
+      {children}
     </UserContext.Provider>
   );
 };
