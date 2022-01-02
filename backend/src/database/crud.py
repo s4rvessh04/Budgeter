@@ -98,8 +98,26 @@ class Friend:
             .all()
         )
 
-    def get_friends_by_id(db: Session, user_id: int):
-
+    def get_friends_by_id(db: Session, user_id: int, friend_id: int):
+        if friend_id:
+            return (
+                db.query(
+                    models.Friend.request_status,
+                    models.Friend.friend_id,
+                    models.User.username,
+                    models.User.name,
+                    models.User.email,
+                )
+                .filter(
+                    models.Friend.user_id == user_id,
+                    models.Friend.friend_id == friend_id,
+                )
+                .join(
+                    models.User,
+                    models.User.id == friend_id,
+                )
+                .all()
+            )
         return (
             db.query(
                 models.Friend.request_status,
@@ -226,19 +244,20 @@ class Expense:
                 .limit(limit)
                 .all()
             )
-        return (
-            db.query(models.Expense)
-            .filter(models.Expense.user_id == user_id)
-            .filter(
-                or_(
-                    extract("year", models.Expense.date) == year,
-                    extract("month", models.Expense.date) == month,
+        else:
+            return (
+                db.query(models.Expense)
+                .filter(models.Expense.user_id == user_id)
+                .filter(
+                    or_(
+                        extract("year", models.Expense.date) == year,
+                        extract("month", models.Expense.date) == month,
+                    )
                 )
+                .offset(skip)
+                .limit(limit)
+                .all()
             )
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
 
     def create_expense(db: Session, user_id: int, expense: schemas.ExpenseCreate):
         entry = models.Expense(
@@ -317,12 +336,7 @@ class SharedExpense:
 
         if not year and not month and not day:
             return (
-                db.query(
-                    models.SharedExpense,
-                    models.User.name,
-                    models.User.username,
-                    models.User.email,
-                )
+                db.query(models.SharedExpense, models.User)
                 .filter(models.SharedExpense.member_id == user_id)
                 .join(models.User, models.User.id == models.SharedExpense.member_id)
                 .offset(skip)
@@ -331,12 +345,7 @@ class SharedExpense:
             )
         if day:
             return (
-                db.query(
-                    models.SharedExpense,
-                    models.User.name,
-                    models.User.username,
-                    models.User.email,
-                )
+                db.query(models.SharedExpense, models.User)
                 .filter(models.SharedExpense.member_id == user_id)
                 .filter(
                     and_(
@@ -351,12 +360,7 @@ class SharedExpense:
                 .all()
             )
         return (
-            db.query(
-                models.SharedExpense,
-                models.User.name,
-                models.User.username,
-                models.User.email,
-            )
+            db.query(models.SharedExpense, models.User)
             .filter(models.SharedExpense.member_id == user_id)
             .filter(
                 or_(
@@ -364,7 +368,7 @@ class SharedExpense:
                     extract("month", models.SharedExpense.date) == month,
                 )
             )
-            .join(models.User, models.User.id == models.SharedExpense.member_id)
+            .join(models.User, models.SharedExpense.member_id == models.User.id)
             .offset(skip)
             .limit(limit)
             .all()
