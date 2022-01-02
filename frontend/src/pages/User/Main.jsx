@@ -31,7 +31,7 @@ export const Main = () => {
   const [expenseTotalAmount, setExpenseTotalAmount] = useState(0);
 
   const sharedExpenseFetcher = useFetcher({
-    url: handleApiUrl(`/expenses/shared?month=${currentMonth}`),
+    url: handleApiUrl(`/expenses/shared?month=${currentMonth}`), // Add a query param for year
   });
 
   const allSharedExpenseFetcher = useFetcher({
@@ -39,7 +39,11 @@ export const Main = () => {
   });
 
   const expenseFetcher = useFetcher({
-    url: handleApiUrl(`/expenses/?month=${currentMonth}`),
+    url: handleApiUrl(`/expenses/?month=${currentMonth}`), // Add a query param for year
+  });
+
+  const allExpenseFetcher = useFetcher({
+    url: handleApiUrl(`/expenses/`),
   });
 
   const maxExpenseFetcher = useFetcher({
@@ -58,6 +62,7 @@ export const Main = () => {
       const sharedExpenses = sharedExpenseFetcher.data;
       const maxExpense = maxExpenseFetcher.data;
       const allSharedExpense = allSharedExpenseFetcher.data;
+      const allExpenses = allExpenseFetcher.data;
 
       const calculateLending = (l) => {
         let sum = 0;
@@ -71,7 +76,7 @@ export const Main = () => {
         return sum;
       };
 
-      setLend(calculateLending(expenses));
+      setLend(calculateLending(allExpenses));
 
       const calculateBorrowing = (l) => {
         let sum = 0;
@@ -82,21 +87,23 @@ export const Main = () => {
       };
 
       setBorrow(calculateBorrowing(allSharedExpense));
-
       if (expenses && sharedExpenses) {
-        const allExpenses = expenses.concat(
+        const allExpensesCurrentMonth = expenses.concat(
           sharedExpenses.map((i) => i.SharedExpense)
         );
-        setExpenseTotalAmount(
-          allExpenses.length === 1
-            ? allExpenses[0].amount
-            : allExpenses
-                .map((exp) => exp.amount)
-                .reduce((amount1, amount2) => amount1 + amount2)
-        );
+        const handleAllExpenses = (allExpenses) => {
+          console.log(allExpenses);
+          if (allExpenses.length === 0) return 0;
+          if (allExpenses.length === 1) return allExpenses[0].amount;
+          else
+            return allExpenses
+              .map((exp) => exp.amount)
+              .reduce((amount1, amount2) => amount1 + amount2);
+        };
+        setExpenseTotalAmount(handleAllExpenses(allExpensesCurrentMonth));
 
         setExpenseData(
-          allExpenses.sort(
+          allExpensesCurrentMonth.sort(
             (exp1, exp2) => new Date(exp2.date) - new Date(exp1.date)
           )
         );
@@ -109,7 +116,9 @@ export const Main = () => {
     if (
       !sharedExpenseFetcher.isLoading &&
       !expenseFetcher.isLoading &&
-      !maxExpenseFetcher.isLoading
+      !maxExpenseFetcher.isLoading &&
+      !allExpenseFetcher.isLoading &&
+      !allSharedExpenseFetcher.isLoading
     )
       getExpenses();
   }, [
@@ -117,9 +126,12 @@ export const Main = () => {
     expenseFetcher.data,
     maxExpenseFetcher.data,
     allSharedExpenseFetcher.data,
+    allExpenseFetcher.data,
     sharedExpenseFetcher.isLoading,
     expenseFetcher.isLoading,
     maxExpenseFetcher.isLoading,
+    allSharedExpenseFetcher.isLoading,
+    allExpenseFetcher.isLoading,
   ]);
 
   useEffect(() => {
@@ -151,7 +163,10 @@ export const Main = () => {
             </button>
           ),
         percentage: userMaxExpense
-          ? `${(expenseTotalAmount / userMaxExpense) * 100}%`
+          ? `${((expenseTotalAmount / userMaxExpense) * 100).toLocaleString(
+              undefined,
+              { minimumFractionDigits: 2 }
+            )}%`
           : '0',
         icon: <Bi.BiWallet className={walletIconClass} />,
         iconParentClass: 'bg-indigo-100 rounded-full p-2.5 self-center',
@@ -308,7 +323,7 @@ export const Main = () => {
                     />
                   ) : (
                     <>
-                      <div className='flex md:px-5 px-2 md:pt-5 pt-4 pb-3 font-poppins font-semibold text-sm justify-evenly text-gray-600 text-left sticky top-0 bg-white'>
+                      <div className='flex md:px-5 px-2 md:pt-5 pt-4 pb-3 font-poppins font-semibold text-sm justify-evenly text-gray-600 text-left sticky top-0 bg-white overscroll-y-scroll'>
                         <div className='w-1/12 md:visible invisible'>Type</div>
                         <div className='w-1/4 md:visible invisible'>Date</div>
                         <div className='w-2/5 md:visible invisible'>
@@ -417,7 +432,7 @@ export const Main = () => {
             )}
           </div>
           {/* History table */}
-          <div className='lg:h-auto h-96 flex flex-col bg-white col-span-1 rounded-xl border border-gray-200 md:shadow-none shadow-md overflow-y-auto'>
+          <div className='lg:h-auto h-96 flex flex-col bg-white col-span-1 rounded-xl border border-gray-200 md:shadow-none shadow-md'>
             <div className='sticky top-0 md:px-5 px-3.5 md:pt-2.5 pt-2'>
               <h1 className='text-gray-900 font-poppins font-semibold text-xl mb-2.5'>
                 History
