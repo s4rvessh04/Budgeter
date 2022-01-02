@@ -1,13 +1,16 @@
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class UserBase(BaseModel):
     name: str = None
     username: str = None
     email: EmailStr = None
+
+    class Config:
+        orm_mode = True
 
 
 class UserCreate(UserBase):
@@ -97,34 +100,34 @@ class SharedExpenseStructure(SharedExpenseBase):
 
 class SharedExpense(SharedExpenseBase):
     SharedExpense: SharedExpenseStructure = None
-    name: str
-    username: str
-    email: str
+    User: UserBase = None
+
+    class Config:
+        orm_mode = True
+        fields = {"User": "MemberUser"}  # Used for defining alias for a field
+        allow_population_by_field_name = (
+            True  # Is required if we have user defined dataclasses
+        )
+
+
+class ExpenseBase(BaseModel):
+    id: int = None
+    user_id: int = None
+    date: datetime = None
+    description: str = None
+    amount: float = None
+    tag_id: Optional[int] = None
+    shared: bool = None
 
     class Config:
         orm_mode = True
 
 
-class ExpenseBase(BaseModel):
-    pass
-
-
 class ExpenseCreate(ExpenseBase):
-    description: str = None
-    amount: float = None
-    tag_id: Optional[int] = None
-    shared: bool = False
     shared_expense: SharedExpenseCreate = None
 
 
 class Expense(ExpenseBase):
-    id: int
-    user_id: int
-    date: datetime
-    description: str = None
-    amount: float
-    tag_id: int = None
-    shared: bool
     shared_expenses: List[SharedExpenseStructure] = []
 
     class Config:
