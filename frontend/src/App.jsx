@@ -8,7 +8,7 @@ function App() {
   const [, , isAuthenticated] = useContext(UserContext);
   return (
     <>
-      <div className='subpixel-antialiased font-inter bg-gray-100'>
+      <div className='subpixel-antialiased font-inter bg-gray-100 select-none'>
         <Switch>
           <Route path='/' exact>
             {!isAuthenticated ? <Homepage /> : <Redirect to='/user' />}
