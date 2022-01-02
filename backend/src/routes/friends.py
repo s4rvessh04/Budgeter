@@ -6,10 +6,13 @@ router = APIRouter()
 
 @router.get("/", response_model=List[schemas.Friend])
 def read_friends(
+    friend_id: int = None,
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    return crud.Friend.get_friends_by_id(db, user_id=current_user.id)
+    return crud.Friend.get_friends_by_id(
+        db, friend_id=friend_id, user_id=current_user.id
+    )
 
 
 @router.get("/all", response_model=List[schemas.Friend])
