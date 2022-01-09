@@ -24,7 +24,7 @@
   "author": {
     "name": "Sarvesh Rane",
     "email": "targusrock@gmail.com",
-    "url": "https://targusrock-portfolio-website.netlify.app)"
+    "url": "https://targusrock-portfolio-website.netlify.app"
   },
   "scripts": {
     "start": "craco start",
