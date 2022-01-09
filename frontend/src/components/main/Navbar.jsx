@@ -21,11 +21,6 @@ export const Navbar = ({ url, isOpen, toggle, type }) => {
       to: `${url}/friends`,
       icon: <Hi.HiSparkles className={iconClassName} />,
     },
-    {
-      name: 'Graph View',
-      to: `${url}/graphs`,
-      icon: <Hi.HiChartPie className={iconClassName} />,
-    },
   ];
 
   const settingsLinks = [
