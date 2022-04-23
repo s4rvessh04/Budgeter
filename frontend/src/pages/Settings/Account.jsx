@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { Redirect, useHistory } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import * as Hi from 'react-icons/hi';
@@ -76,14 +76,13 @@ export const Account = () => {
   };
 
   const handleUsername = (e) => setUsername(e.target.value);
-  const handleIsDeleting = () => setIsDeleting(!isDeleting);
   const handleAccountDelete = () => {
     addModal(
       'Confirm Deleting',
       'All associated data will be lost. This method is irreversible.',
       <Hi.HiOutlineExclamation className='flex-shrink-0 mt-0.5 h-8 w-8 mr-3 text-red-500' />,
       <button
-        onClick={handleIsDeleting}
+        onClick={() => setIsDeleting(!isDeleting)}
         className='py-1.5 px-3.5 font-medium text-white bg-red-600 rounded-md hover:opacity-95 focus:ring-2 ring-red-700 ring-offset-2 transition-all duration-150'>
         Confirm
       </button>
@@ -95,11 +94,11 @@ export const Account = () => {
       await user.submitRequest();
       logout();
       history.push('/login');
-      handleIsDeleting();
+      setIsDeleting(!isDeleting);
     }
 
     if (isDeleting) handleAccountDelete();
-  }, [isDeleting]);
+  }, [isDeleting, history, logout, user]);
 
   useEffect(() => {
     setFormData({ username: username });

@@ -1,8 +1,7 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import * as Hi from 'react-icons/hi';
 
-import { UserContext } from 'context';
+import * as Hi from 'react-icons/hi';
 import { useFetcher, useSubmit } from 'hooks';
 import { ContentContainer, InputBox, Loader, ToastPortal } from 'components';
 import { handleApiUrl } from 'shared';
@@ -73,11 +72,13 @@ export const Profile = () => {
       const userMaxExpenseRequest = maxExpense
         ? await userMaxExpense.submitRequest()
         : false;
-      addToast(
-        'Updated Successfully',
-        'Refresh to see changes.',
-        <Hi.HiOutlineCheckCircle className='flex-shrink-0 h-6 w-6 mr-3 text-green-400' />
-      );
+      if (userRequest || userMaxExpenseRequest) {
+        addToast(
+          'Updated Successfully',
+          'Refresh to see changes.',
+          <Hi.HiOutlineCheckCircle className='flex-shrink-0 h-6 w-6 mr-3 text-green-400' />
+        );
+      }
     } else {
       addToast(
         'Error Occured',

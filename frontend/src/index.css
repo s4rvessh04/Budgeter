@@ -11,6 +11,45 @@
   animation: toast-in-right 0.7s;
 }
 
+.aDD-enter {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease-in-out;
+  animation: dropDown-enter 0.2s;
+}
+
+.aDD-exit {
+  transition: transform 0.4s ease-out, opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation: dropDown-exit 0.5s;
+  visibility: hidden;
+}
+
+@keyframes dropDown-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(-10%);
+  }
+  50% {
+    opacity: 30;
+  }
+  100% {
+    opacity: 100;
+    transform: translateY(0%);
+  }
+}
+
+@keyframes dropDown-exit {
+  0% {
+    opacity: 70;
+    transform: translateY(0%);
+  }
+  50% {
+    opacity: 30;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10%);
+  }
+}
+
 @keyframes toast-in-right {
   from {
     transform: translateX(100%);

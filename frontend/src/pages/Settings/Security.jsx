@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import { useState, useContext, useRef } from 'react';
 import { Redirect, useHistory } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import * as Hi from 'react-icons/hi';
 
 import { UserContext } from 'context';
-import { useFetcher, useSubmit } from 'hooks';
+import { useSubmit } from 'hooks';
 import { ContentContainer, InputBox, ToastPortal } from 'components';
 import { handleApiUrl } from 'shared';
 

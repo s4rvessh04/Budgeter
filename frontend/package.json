@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "@craco/craco": "^6.3.0",
@@ -23,8 +23,8 @@
   },
   "author": {
     "name": "Sarvesh Rane",
-    "email": "targusrock@gmail.com",
-    "url": "https://targusrock-portfolio-website.netlify.app"
+    "email": "sarveshrane2000@gmail.com",
+    "url": "https://sarveshrane2000-portfolio.netlify.app"
   },
   "scripts": {
     "start": "craco start",
