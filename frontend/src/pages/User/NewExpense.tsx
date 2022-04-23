@@ -8,17 +8,39 @@ import { UserContext } from 'context';
 import { handleApiUrl } from 'shared';
 import { ToastPortal, InputBox, Dropdown } from 'components';
 
-export const NewExpense = () => {
-  const toastRef = useRef();
+type MembersAndAmount = {
+  [key: string]: number;
+};
+
+type SharedExpense = {
+  members_and_amount: MembersAndAmount;
+  description: string;
+  tag_id: number;
+};
+
+type Form = {
+  description: string;
+  amount: number;
+  tag_id: number;
+  shared: boolean;
+  shared_expense: SharedExpense | null;
+};
+
+type ToastRef = {
+  addMessage: (args: Object) => void;
+};
+
+export const NewExpense: React.FC = () => {
+  const toastRef = useRef<ToastRef>(null);
   const [, setErrorMessage] = useState('');
   const [, , isAuthenticated] = useContext(UserContext);
-  const [membersCount, setMembersCount] = useState(0);
-  const [members, setMembers] = useState([]);
-  const [amount, setAmount] = useState(0);
-  const [description, setDescription] = useState('');
-  const [tagId, setTagId] = useState(null);
-  const [shared, setShared] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [membersCount, setMembersCount] = useState<number>(0);
+  const [members, setMembers] = useState<Array<string>>([]);
+  const [amount, setAmount] = useState<number>(0);
+  const [description, setDescription] = useState<string>('');
+  const [tagId, setTagId] = useState<number | null>(null);
+  const [shared, setShared] = useState<boolean>(false);
+  const [formData, setFormData] = useState<Form | Object | any>({});
 
   const friendsList = useFetcher({
     url: handleApiUrl('/friends/'),
@@ -30,8 +52,12 @@ export const NewExpense = () => {
     body: formData,
   });
 
-  const addToast = (mainMessage, subMessage, icon) => {
-    toastRef.current.addMessage({
+  const addToast = (
+    mainMessage: string,
+    subMessage: string,
+    icon: React.ReactElement
+  ) => {
+    toastRef.current?.addMessage({
       mainMessage: mainMessage,
       subMessage: subMessage,
       icon: icon,
@@ -40,7 +66,7 @@ export const NewExpense = () => {
 
   const submitForm = async () => {
     const { response, data } = await submitRequest();
-    console.log(data, response);
+    console.log(response, data);
     if (!response.ok) {
       const message = data.detail;
       setErrorMessage(message);
@@ -58,28 +84,29 @@ export const NewExpense = () => {
     }
   };
 
-  const handleDescription = (e) => {
+  const handleDescription = (e: any) => {
     setDescription(e.target.value);
   };
 
-  const handleAmount = (e) => {
+  const handleAmount = (e: any) => {
     setAmount(e.target.value);
   };
 
-  const handleTag = (e) => {
+  const handleTag = (e: any) => {
     setTagId(e.target.value);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
     submitForm();
   };
 
   useEffect(() => {
-    let members_and_amount = {};
-    let isShared = members.length >= 1 ? true : false;
+    let members_and_amount: MembersAndAmount = {};
+    let isShared: boolean = members.length >= 1 ? true : false;
     members.forEach(
-      (member) => (members_and_amount[member.friend_id] = amount / membersCount)
+      (member: any) =>
+        (members_and_amount[member.friend_id] = amount / membersCount)
     );
 
     setShared(isShared);
@@ -174,13 +201,13 @@ export const NewExpense = () => {
                 </h3>
               </div>
               <div className='self-center'>
-                <button className='px-8 py-2 flex items-center rounded-lg font-poppins font-bold text-white bg-blue-600 hover:opacity-90 focus:ring-2 focus:ring-blue-600 ring-offset-2 transition-all duration-150'>
+                <button className='px-8 py-2 flex items-center rounded-lg font-poppins font-bold text-white bg-gradient-to-b from-blue-600 to-blue-500 hover:opacity-90 focus:ring-2 focus:ring-blue-600 ring-offset-1 transition-all duration-150'>
                   Confirm <Hi.HiCheck className='h-5 w-5 ml-1' />
                 </button>
               </div>
             </div>
           </form>
-          <ToastPortal ref={toastRef} autoClose={true} />
+          <ToastPortal autoClose={true} ref={toastRef} />
         </>
       )}
     </>

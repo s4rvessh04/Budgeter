@@ -1,12 +1,6 @@
-import React from 'react';
 import * as Hi from 'react-icons/hi';
 
-export const Toast = ({
-  onClose,
-  mainMessage,
-  subMessage = null,
-  icon = null,
-}) => {
+export const Toast = ({ onClose, mainMessage, subMessage, icon = null }) => {
   return (
     <div className='z-40 w-96 flex justify-between p-4 lg:m-0 lg:mb-3.5 m-auto mb-3 border border-gray-300 rounded-xl shadow-md bg-white animate-slideIn-fast'>
       <div className='flex mr-3 overflow-ellipsis'>

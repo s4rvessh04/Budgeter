@@ -11,6 +11,7 @@ import { useFetcher } from 'hooks';
 import { handleApiUrl } from 'shared';
 import {
   ErrorPromptAction,
+  ExpenseContainer,
   ExpenseEditingContainer,
   Loader,
   ModalPortal,
@@ -18,53 +19,78 @@ import {
 } from 'components';
 
 export const Main = () => {
-  const [borrow, setBorrow] = useState(0);
   const [lend, setLend] = useState(0);
+  const [borrow, setBorrow] = useState(0);
+  const [headCards, setHeadCards] = useState<Array<any>>([]);
   const [isLoading, setLoading] = useState(true);
-  const [headCards, setHeadCards] = useState([]);
-  const [expenseData, setExpenseData] = useState([]);
+  const [expenseData, setExpenseData] = useState<Array<any>>([]);
+  const [searchQuery, setSearchQuery] = useState<String>('');
+  const [filterSelection, setFilterSelection] = useState<String>('');
   const [userMaxExpense, setUserMaxExpense] = useState(0);
-  const [toggleSearch, setToggleSearch] = useState(false);
-  const [currentMonth] = useState(new Date().getMonth() + 1);
-  const [activeExpenseId, setActiveExpenseId] = useState(null);
+  const [activeExpenseId, setActiveExpenseId] = useState<null | number>(null);
+  const [togglePrevMonth] = useState(false);
   const [lendBorrowToggle, setLendBorrowToggle] = useState(false);
   const [expenseTotalAmount, setExpenseTotalAmount] = useState(0);
+  const [currentMonthAndYear] = useState(moment().format('MM/YYYY').split('/'));
+  const [pervoiusMonthAndYear] = useState(
+    moment().subtract(1, 'month').format('MM/YYYY').split('/')
+  );
+  const [expenseTotalAmountPervMonth] = useState(0);
 
+  const mainIconClass = 'h-10 w-10';
+  const moneyIconClass = String(`${mainIconClass} text-green-400`);
+  const walletIconClass = String(`${mainIconClass} text-indigo-400`);
+  const ownedIconClass = String(`${mainIconClass} text-red-400`);
+
+  // Fetching user shared expenses by current month and year
   const sharedExpenseFetcher = useFetcher({
-    url: handleApiUrl(`/expenses/shared?month=${currentMonth}`), // Add a query param for year
+    url: handleApiUrl(
+      `/expenses/shared?month=${
+        togglePrevMonth ? pervoiusMonthAndYear[0] : currentMonthAndYear[0]
+      }?year=${
+        togglePrevMonth ? pervoiusMonthAndYear[1] : currentMonthAndYear[1]
+      }`
+    ),
   });
 
+  // Fetching all user shared expenses
   const allSharedExpenseFetcher = useFetcher({
     url: handleApiUrl(`/expenses/shared`),
   });
 
+  // Fetching user expenses by current month and year
   const expenseFetcher = useFetcher({
-    url: handleApiUrl(`/expenses/?month=${currentMonth}`), // Add a query param for year
+    url: handleApiUrl(
+      `/expenses/?month=${
+        togglePrevMonth ? pervoiusMonthAndYear[0] : currentMonthAndYear[0]
+      }?year=${
+        togglePrevMonth ? pervoiusMonthAndYear[1] : currentMonthAndYear[1]
+      }`
+    ),
   });
 
+  // Fetching all user expenses
   const allExpenseFetcher = useFetcher({
     url: handleApiUrl(`/expenses/`),
   });
 
+  // Fetching all user max expense for the month
   const maxExpenseFetcher = useFetcher({
     url: handleApiUrl('/max_expense/'),
   });
 
   const routerHistory = useHistory();
 
-  const handleLendBorrowToggle = () => {
-    setLendBorrowToggle(!lendBorrowToggle);
-  };
-
+  // useEffect hook to clean and calculate expenses' amount
   useEffect(() => {
     const getExpenses = () => {
-      const expenses = expenseFetcher.data;
-      const sharedExpenses = sharedExpenseFetcher.data;
-      const maxExpense = maxExpenseFetcher.data;
+      const expenses: Array<any> = expenseFetcher.data;
+      const sharedExpenses: Array<any> = sharedExpenseFetcher.data;
+      const maxExpense: any = maxExpenseFetcher.data;
       const allSharedExpense = allSharedExpenseFetcher.data;
       const allExpenses = allExpenseFetcher.data;
 
-      const calculateLending = (l) => {
+      const calculateLending = (l: Array<any>) => {
         let sum = 0;
         for (let i of l) {
           if (i.shared) {
@@ -78,7 +104,7 @@ export const Main = () => {
 
       setLend(calculateLending(allExpenses));
 
-      const calculateBorrowing = (l) => {
+      const calculateBorrowing = (l: Array<any>) => {
         let sum = 0;
         for (let i of l) {
           sum += i.SharedExpense.amount;
@@ -88,11 +114,12 @@ export const Main = () => {
 
       setBorrow(calculateBorrowing(allSharedExpense));
       if (expenses && sharedExpenses) {
-        const allExpensesCurrentMonth = expenses.concat(
+        const allExpensesCurrentMonth: Array<any> = expenses.concat(
           sharedExpenses.map((i) => i.SharedExpense)
         );
-        const handleAllExpenses = (allExpenses) => {
-          console.log(allExpenses);
+
+        // Returns sum of all expenses of the user
+        const sumAllExpenses = (allExpenses: Array<any>) => {
           if (allExpenses.length === 0) return 0;
           if (allExpenses.length === 1) return allExpenses[0].amount;
           else
@@ -100,11 +127,12 @@ export const Main = () => {
               .map((exp) => exp.amount)
               .reduce((amount1, amount2) => amount1 + amount2);
         };
-        setExpenseTotalAmount(handleAllExpenses(allExpensesCurrentMonth));
-
+        setExpenseTotalAmount(sumAllExpenses(allExpensesCurrentMonth));
         setExpenseData(
+          // allExpenses
           allExpensesCurrentMonth.sort(
-            (exp1, exp2) => new Date(exp2.date) - new Date(exp1.date)
+            (exp1, exp2) =>
+              new Date(exp2.date).valueOf() - new Date(exp1.date).valueOf()
           )
         );
       }
@@ -134,19 +162,29 @@ export const Main = () => {
     allExpenseFetcher.isLoading,
   ]);
 
+  // useEffect hook to handle the top main cards
   useEffect(() => {
     const headCardsData = [
       {
         header: 'Total Expenses',
         amount: `₹${expenseTotalAmount}`,
-        percentage: '2.5%',
+        percentage: `₹${
+          isNaN(expenseTotalAmount / expenseTotalAmountPervMonth)
+            ? '0'
+            : expenseTotalAmount === 0 || expenseTotalAmountPervMonth === 0
+            ? '0'
+            : expenseTotalAmount / expenseTotalAmountPervMonth
+        }%`,
         icon: <Fa.FaRegMoneyBillAlt className={moneyIconClass} />,
-        iconParentClass: 'bg-green-100 rounded-full p-2.5 self-center',
+        iconParentClass:
+          'bg-gradient-to-br from-green-100 to-green-200 rounded-full p-2.5 self-center',
         get badge() {
-          const percentageIncDec = this.percentage.split('%')[0];
+          const percentageIncDec = parseFloat(
+            this.percentage.substring(1, this.percentage.length - 1)
+          );
           return handleBadges(
-            percentageIncDec > 0 ? 'up' : 'down',
-            percentageIncDec > 0 ? 'down' : 'up'
+            percentageIncDec > 1 ? 'down' : 'up',
+            percentageIncDec > 1 ? 'down' : 'up'
           );
         },
       },
@@ -163,18 +201,21 @@ export const Main = () => {
             </button>
           ),
         percentage: userMaxExpense
-          ? `${((expenseTotalAmount / userMaxExpense) * 100).toLocaleString(
+          ? `₹${(expenseTotalAmount / userMaxExpense).toLocaleString(
               undefined,
-              { minimumFractionDigits: 2 }
+              {
+                minimumFractionDigits: 2,
+              }
             )}%`
           : '0',
         icon: <Bi.BiWallet className={walletIconClass} />,
-        iconParentClass: 'bg-indigo-100 rounded-full p-2.5 self-center',
+        iconParentClass:
+          'bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-full p-2.5 self-center',
         get badge() {
-          const percentageIncDec = this.percentage.split('%')[0];
+          const percentageIncDec = parseFloat(this.percentage.split('%')[0]);
           return handleBadges(
             percentageIncDec < 0 ? 'up' : 'down',
-            percentageIncDec > 100 ? 'down' : 'up'
+            percentageIncDec > 100 ? 'up' : 'down'
           );
         },
       },
@@ -182,7 +223,7 @@ export const Main = () => {
         header: (
           <button
             className='text-base font-semibold'
-            onClick={handleLendBorrowToggle}>
+            onClick={() => setLendBorrowToggle(!lendBorrowToggle)}>
             {lendBorrowToggle ? (
               <span className='flex items-center'>
                 Total Borrowing
@@ -199,42 +240,67 @@ export const Main = () => {
         amount: lendBorrowToggle ? `₹${borrow}` : `₹${lend}`,
         percentage: '0',
         icon: <Ri.RiHandCoinLine className={ownedIconClass} />,
-        iconParentClass: 'bg-red-100 rounded-full p-2.5 self-center',
-        get badge() {
-          return handleBadges(this.percentage.split('%')[0]);
-        },
+        iconParentClass:
+          'bg-gradient-to-br from-red-100 to-red-200 rounded-full p-2.5 self-center',
+        // get badge() {
+        //   return handleBadges(this.percentage.split('%')[0]);
+        // },
       },
     ];
 
     setHeadCards(headCardsData);
-  }, [userMaxExpense, expenseTotalAmount, lendBorrowToggle]);
+  }, [
+    userMaxExpense,
+    expenseTotalAmount,
+    lendBorrowToggle,
+    walletIconClass,
+    routerHistory,
+    borrow,
+    expenseTotalAmountPervMonth,
+    lend,
+    moneyIconClass,
+    ownedIconClass,
+  ]);
 
-  const toastRef = useRef();
-
-  const addToast = (mainMessage, subMessage, icon) => {
-    toastRef.current.addMessage({
-      mainMessage: mainMessage,
-      subMessage: subMessage,
-      icon: icon,
-    });
+  type ToastRef = {
+    addMessage: (toast: any) => void;
   };
 
-  const modalRef = useRef();
+  const toastRef = useRef<ToastRef>(null);
 
-  const addModal = (mainMessage, subMessage, icon) => {
-    modalRef.current.addMessage({
-      mainMessage: mainMessage,
-      subMessage: subMessage,
-      icon: icon,
-    });
-  };
+  // const addToast = (
+  //   mainMessage: string,
+  //   subMessage: string,
+  //   icon: HTMLElement
+  // ) => {
+  //   if (toastRef.current) {
+  //     toastRef.current.addMessage({
+  //       mainMessage: mainMessage,
+  //       subMessage: subMessage,
+  //       icon: icon,
+  //     });
+  //   }
+  // };
 
-  const mainIconClass = 'h-10 w-10';
-  const moneyIconClass = String(`${mainIconClass} text-green-400`);
-  const walletIconClass = String(`${mainIconClass} text-indigo-400`);
-  const ownedIconClass = String(`${mainIconClass} text-red-400`);
+  const modalRef = useRef<ToastRef>(null);
 
-  const handleBadges = (arrowDirection, trend) => {
+  // const addModal = (
+  //   mainMessage: string,
+  //   subMessage: string,
+  //   icon: HTMLElement
+  // ) => {
+  //   if (modalRef.current) {
+  //     modalRef.current.addMessage({
+  //       mainMessage: mainMessage,
+  //       subMessage: subMessage,
+  //       icon: icon,
+  //     });
+  //   }
+  // };
+
+  // Handling the trend(Up/Down) behaviour of badges in main cards
+
+  const handleBadges = (arrowDirection: string, trend: string) => {
     return {
       badgeClass:
         trend === 'up'
@@ -245,11 +311,7 @@ export const Main = () => {
     };
   };
 
-  const handleSearchBar = () => {
-    setToggleSearch(!toggleSearch);
-  };
-
-  const handleActiveExpenseView = (expenseId) => {
+  const handleActiveExpenseView = (expenseId: number) => {
     if (expenseId === activeExpenseId) {
       setActiveExpenseId(null);
     } else {
@@ -257,7 +319,7 @@ export const Main = () => {
     }
   };
 
-  const handleRedirect = (path) => {
+  const handleRedirect = (path: string) => {
     return routerHistory.push(path);
   };
 
@@ -320,111 +382,49 @@ export const Main = () => {
                       expense={expenseData
                         .filter((expense) => expense.id === activeExpenseId)
                         .pop()}
+                      sharedExpense={sharedExpenseFetcher.data}
                     />
                   ) : (
-                    <>
-                      <div className='flex md:px-5 px-2 md:pt-5 pt-4 pb-3 font-poppins font-semibold text-sm justify-evenly text-gray-600 text-left sticky top-0 bg-white overscroll-y-scroll'>
-                        <div className='w-1/12 md:visible invisible'>Type</div>
-                        <div className='w-1/4 md:visible invisible'>Date</div>
-                        <div className='w-2/5 md:visible invisible'>
-                          Description
-                        </div>
-                        <div className='w-1/6 md:visible invisible'>Tag</div>
-                        <div className='md:w-1/4 w-full flex justify-between items-center'>
-                          <span className='md:visible invisible'>Amount</span>
-                          <span className='md:invisible visible'>Search</span>
-                          <form
-                            action='submit'
-                            method='GET'
-                            onSubmit={(e) => e.preventDefault()}
-                            className={
-                              toggleSearch ? 'absolute w-full left-0' : 'w-min'
-                            }>
-                            <div className='relative mx-1.5'>
-                              <span className='absolute inset-y-0 right-0 flex items-center'>
-                                <button
-                                  className='bg-gray-100 rounded-full mr-1'
-                                  onClick={() => handleSearchBar()}>
-                                  {toggleSearch ? (
-                                    <Hi.HiX className='h-5 w-5 m-1.5' />
-                                  ) : (
-                                    <Hi.HiSearch className='h-5 w-5 m-1.5' />
-                                  )}
-                                </button>
-                              </span>
-                              <input
-                                type='search'
-                                className={
-                                  toggleSearch
-                                    ? 'font-inter font-medium text-gray-600 focus:outline-none flex items-center bg-white px-4 pr-10 border-2 border-gray-200 rounded-full w-full py-2'
-                                    : 'w-0'
-                                }
-                              />
-                            </div>
-                          </form>
-                        </div>
-                      </div>
-                      <div className='flex-1 overflow-y-auto md:px-2.5 px-1.5'>
-                        {expenseData.map((expense) => (
-                          <>
-                            <div
-                              className={
-                                activeExpenseId === expense.id
-                                  ? 'text-sm font-medium text-gray-700 flex items-center justify-evenly md:px-5 px-3 py-2 bg-gray-100 rounded-xl cursor-pointer ring-2 ring-inset ring-gray-200'
-                                  : 'text-sm font-medium text-gray-200 flex items-center justify-evenly md:px-5 px-3 py-2 hover:bg-gray-100 cursor-pointer hover:text-gray-700 rounded-xl'
-                              }
-                              onClick={() =>
-                                handleActiveExpenseView(expense.id)
-                              }>
-                              <div className='w-1/12 text-gray-700'>
-                                {expense.shared || expense.expense_id ? (
-                                  <Hi.HiUsers className='h-4 w-4 text-current' />
-                                ) : (
-                                  <Hi.HiUser className='h-4 w-4 text-current' />
-                                )}
-                              </div>
-                              <div className='w-1/4 flex flex-col space-y-1'>
-                                <span className='font-bold text-gray-700'>
-                                  {moment(expense.date).local().format('LL')}
-                                </span>
-                                <span className='text-xs font-semibold text-gray-400'>
-                                  {moment(moment.utc(expense.date))
+                    <ExpenseContainer>
+                      <ExpenseContainer.Header
+                        onChange={setSearchQuery}
+                        setFilterSelection={setFilterSelection}
+                      />
+                      <ExpenseContainer.Body>
+                        {expenseData &&
+                          expenseData
+                            .filter((obj) =>
+                              obj.description
+                                ?.toLowerCase()
+                                .includes(searchQuery.toLowerCase())
+                            )
+                            .map((item) => (
+                              <>
+                                <ExpenseContainer.Body.Item
+                                  Description={item.description}
+                                  Amount={item.amount}
+                                  Date={moment(item.date).local().format('LL')}
+                                  Time={moment(moment.utc(item.date))
                                     .local()
                                     .format('LT')}
-                                </span>
-                              </div>
-                              <div className='w-2/5 text-gray-700'>
-                                {expense.description}
-                              </div>
-                              <div className='w-1/6 text-gray-700'>
-                                {expense.tag_id}
-                              </div>
-                              <div className='w-1/4 font-bold flex justify-between items-center'>
-                                <span className='text-gray-700'>
-                                  ₹{expense.amount}
-                                </span>
-                                <Hi.HiChevronRight className='mr-1 h-5 w-5 text-current' />
-                              </div>
-                            </div>
-                          </>
-                        ))}
-                      </div>
-                      <div className='flex justify-between border-t border-gray-200 pl-5 py-2.5 font-bold text-sm text-gray-600 sticky bottom-0 w-full bg-white'>
-                        <div className='flex flex-col'>
-                          <h4 className='text-gray-700'>Total items</h4>
-                          <span className='text-gray-500'>
-                            {expenseData.length}
-                          </span>
-                        </div>
-                        <div className='flex flex-col w-1/4'>
-                          <h4 className='text-gray-700'>Total Amount</h4>
-                          <span className='text-gray-500'>
-                            ₹{expenseTotalAmount}
-                          </span>
-                        </div>
-                      </div>
-                    </>
+                                  Type={
+                                    item.shared === true || item.main_user_id
+                                      ? 'shared'
+                                      : 'self'
+                                  }
+                                  onClick={() => setActiveExpenseId(item.id)}
+                                />
+                                {console.log(item)}
+                              </>
+                            ))}
+                      </ExpenseContainer.Body>
+                      <ExpenseContainer.Footer
+                        TotalAmount={expenseTotalAmount}
+                        TotalItems={expenseData.length}
+                      />
+                    </ExpenseContainer>
                   )}
+                  {console.log(filterSelection)}
                 </>
               )
             ) : (
@@ -432,17 +432,17 @@ export const Main = () => {
             )}
           </div>
           {/* History table */}
-          <div className='lg:h-auto h-96 flex flex-col bg-white col-span-1 rounded-xl border border-gray-200 md:shadow-none shadow-md'>
+          <div className='lg:h-auto h-96 flex flex-col bg-white col-span-1 rounded-xl border border-gray-200 md:shadow-none shadow-md overflow-y-auto'>
             <div className='sticky top-0 md:px-5 px-3.5 md:pt-2.5 pt-2'>
               <h1 className='text-gray-900 font-poppins font-semibold text-xl mb-2.5'>
-                History
+                Shared Transactions
               </h1>
               <div className='grid grid-cols-2 space-x-2.5 p-1 h-11 mb-2.5 bg-gray-100 rounded-xl w-full text-base font-semibold font-poppins sticky top-0'>
                 <div className='bg-white flex justify-center items-center rounded-lg text-gray-700'>
-                  <h2>Yearly</h2>
+                  <h2>Lending</h2>
                 </div>
                 <div className='flex justify-center items-center rounded-lg text-gray-300'>
-                  <h2>Monthly</h2>
+                  <h2>Borrowing</h2>
                 </div>
               </div>
               <div className='flex justify-between bg-gray-100 rounded-xl py-1 px-2.5 pl-5 mb-2.5'>
@@ -459,7 +459,7 @@ export const Main = () => {
               </div>
             </div>
             <div className='flex-1 overflow-y-auto md:px-5 px-3.5'>
-              {[1, 2, 3, 4, 5, 6, 7].map(() => (
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(() => (
                 <div className='flex justify-between rounded-xl py-3 px-2.5 pl-5 hover:bg-gray-100 mb-0.5 cursor-pointer'>
                   <h5 className='text-sm text-gray-700 font-bold'>2020</h5>
                   <div className='text-sm flex items-center'>

@@ -24,7 +24,7 @@ export const useSubmit = ({
   };
 
   const submitRequest = async () => {
-    const _ = await token;
+    await token;
     const response = await fetch(url, defaultRequestParams);
     const data = await response.json();
 

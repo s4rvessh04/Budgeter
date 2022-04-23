@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import * as Hi from 'react-icons/hi';
 
 import { useSubmit } from 'hooks';
@@ -107,7 +107,7 @@ export const LoginForm = () => {
           </button>
           <h4 className='my-7 text-sm text-gray-600'>
             New to budgeter?
-            <Link to='/signup' className='text-blue-600'>
+            <Link to='/signup' replace={true} className='text-blue-600'>
               {' '}
               Create free account.
             </Link>

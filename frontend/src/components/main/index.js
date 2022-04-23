@@ -10,3 +10,5 @@ export * from './Loader';
 export * from './Dropdown';
 export * from './ErrorPromptAction';
 export * from './ExpenseEditingContainer';
+export * from './ExpenseContainer';
+export * from './DropdownMenu';

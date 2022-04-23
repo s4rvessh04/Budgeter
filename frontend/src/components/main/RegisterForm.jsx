@@ -150,7 +150,7 @@ export const RegisterForm = () => {
           </button>
           <h4 className='my-7 text-sm text-gray-600'>
             Already have an account?
-            <Link to='/login' className='text-blue-600'>
+            <Link to='/login' replace={true} className='text-blue-600'>
               {' '}
               Log In.
             </Link>

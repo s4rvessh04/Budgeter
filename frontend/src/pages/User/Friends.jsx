@@ -47,7 +47,7 @@ export const Friends = () => {
   useEffect(() => {
     if (reqBody) submitRequest();
     if (newFriendRequestBody) pendingRequest.submitRequest();
-  }, [isLoading, reqBody, newFriendRequestBody]);
+  }, [isLoading, reqBody, newFriendRequestBody, submitRequest, pendingRequest]);
 
   const handlePageToggle = () => setSwitchPage(!switchPage);
   const handlenewFriendRequestToggle = () => setPendingToggle(!pendingToggle);
@@ -135,7 +135,10 @@ export const Friends = () => {
                     {newFriendRequest.data.map((request) => (
                       <div className='flex items-center justify-between'>
                         <div className='flex items-center'>
-                          <img className='h-10 w-10 rounded-full mr-2.5' />
+                          <img
+                            className='h-10 w-10 rounded-full mr-2.5'
+                            alt='profilePic'
+                          />
                           <div className='flex flex-col'>
                             <span className='text-sm font-poppins font-medium text-gray-700'>
                               {request.name}

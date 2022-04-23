@@ -1,6 +1,7 @@
-import React, { useContext, useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import * as Hi from 'react-icons/hi';
+
 import { UserContext } from 'context';
 
 export const Navbar = ({ url, isOpen, toggle, type }) => {
@@ -10,38 +11,37 @@ export const Navbar = ({ url, isOpen, toggle, type }) => {
 
   const iconClassName = 'h-6 w-6 m-auto';
 
-  const userLinks = [
-    {
-      name: 'Home',
-      to: `${url}`,
-      icon: <Hi.HiHome className={iconClassName} />,
-    },
-    {
-      name: 'Friends',
-      to: `${url}/friends`,
-      icon: <Hi.HiSparkles className={iconClassName} />,
-    },
-  ];
-
-  const settingsLinks = [
-    {
-      name: 'Profile',
-      to: `${url}/profile`,
-      icon: <Hi.HiUser className={iconClassName} />,
-    },
-    {
-      name: 'Account',
-      to: `${url}/account`,
-      icon: <Hi.HiIdentification className={iconClassName} />,
-    },
-    {
-      name: 'Security',
-      to: `${url}/security`,
-      icon: <Hi.HiKey className={iconClassName} />,
-    },
-  ];
-
   useEffect(() => {
+    const userLinks = [
+      {
+        name: 'Home',
+        to: `${url}`,
+        icon: <Hi.HiHome className={iconClassName} />,
+      },
+      {
+        name: 'Friends',
+        to: `${url}/friends`,
+        icon: <Hi.HiSparkles className={iconClassName} />,
+      },
+    ];
+
+    const settingsLinks = [
+      {
+        name: 'Profile',
+        to: `${url}/profile`,
+        icon: <Hi.HiUser className={iconClassName} />,
+      },
+      {
+        name: 'Account',
+        to: `${url}/account`,
+        icon: <Hi.HiIdentification className={iconClassName} />,
+      },
+      {
+        name: 'Security',
+        to: `${url}/security`,
+        icon: <Hi.HiKey className={iconClassName} />,
+      },
+    ];
     switch (type) {
       case 'settings':
         setNavLinks(settingsLinks);
@@ -49,14 +49,14 @@ export const Navbar = ({ url, isOpen, toggle, type }) => {
       default:
         setNavLinks(userLinks);
     }
-  }, [type]);
+  }, [type, url]);
 
   const handleSettingsDropdown = () => setSettingsDropdown(!settingsDropdown);
 
   return (
     <>
       {/* Mobile Menu */}
-      <nav className='bg-gray-800 p-3 transition duration-200 ease-in-out md:hidden fixed top-0 w-full z-50'>
+      <nav className='bg-gray-800 p-3 transition duration-200 ease-in-out md:hidden fixed top-0 w-full z-40'>
         <div className='flex justify-between items-center'>
           <h1 className='text-xl font-semibold text-white font-mono'>
             Budgeter
@@ -186,7 +186,7 @@ export const Navbar = ({ url, isOpen, toggle, type }) => {
           <h2 className='font-mono font-semibold text-xl text-gray-700'>
             Budgeter
           </h2>
-          <p className='text-xs text-gray-400'>Copyright &#169; 2021</p>
+          <p className='text-xs text-gray-400'>Copyright &#169; 2022</p>
         </div>
       </nav>
     </>
