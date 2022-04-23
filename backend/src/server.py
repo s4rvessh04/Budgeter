@@ -10,7 +10,12 @@ from routes import auth, expenses, friends, max_expense, tags, users
 
 app = FastAPI()
 
-origins = ["http://localhost:3000", "localhost:3000"]
+origins = [
+    "localhost:3000",
+    "localhost:5000",
+    "http://localhost:3000",
+    "http://localhost:5000",
+]
 
 app.add_middleware(
     CORSMiddleware,
