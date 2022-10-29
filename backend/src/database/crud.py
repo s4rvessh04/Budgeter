@@ -244,16 +244,38 @@ class Expense:
                 .limit(limit)
                 .all()
             )
+        elif month and year:
+            return (
+                db.query(models.Expense)
+                .filter(models.Expense.user_id == user_id)
+                .filter(extract("month", models.Expense.date) == month,extract("year", models.Expense.date) == year)
+                .offset(skip)
+                .limit(limit)
+                .all()
+            )
+        elif month:
+            return (
+                db.query(models.Expense)
+                .filter(models.Expense.user_id == user_id)
+                .filter(extract("month", models.Expense.date) == month)
+                .offset(skip)
+                .limit(limit)
+                .all()
+            )
+        elif year:
+            return (
+                db.query(models.Expense)
+                .filter(models.Expense.user_id == user_id)
+                .filter(extract("year", models.Expense.date) == year)
+                .offset(skip)
+                .limit(limit)
+                .all()
+            )
         else:
             return (
                 db.query(models.Expense)
                 .filter(models.Expense.user_id == user_id)
-                .filter(
-                    or_(
-                        extract("year", models.Expense.date) == year,
-                        extract("month", models.Expense.date) == month,
-                    )
-                )
+                .filter(extract("month", models.Expense.date) == month,extract("year", models.Expense.date) == year)
                 .offset(skip)
                 .limit(limit)
                 .all()
@@ -324,9 +346,9 @@ class SharedExpense:
     def read_shared_expense(
         db: Session,
         user_id: int,
-        day: int,
-        month: int,
-        year: int,
+        day: str,
+        month: str,
+        year: str,
         skip: int,
         limit: int,
     ):
@@ -359,20 +381,46 @@ class SharedExpense:
                 .limit(limit)
                 .all()
             )
-        return (
-            db.query(models.SharedExpense, models.User)
-            .filter(models.SharedExpense.member_id == user_id)
-            .filter(
-                or_(
-                    extract("year", models.SharedExpense.date) == year,
-                    extract("month", models.SharedExpense.date) == month,
-                )
+        elif month and year:
+            return (
+                db.query(models.SharedExpense, models.User)
+                .filter(models.SharedExpense.member_id == user_id)
+                .filter(extract("month", models.SharedExpense.date) == month,extract("year", models.SharedExpense.date) == year)
+                .join(models.User, models.SharedExpense.member_id == models.User.id)
+                .offset(skip)
+                .limit(limit)
+                .all()
             )
-            .join(models.User, models.SharedExpense.member_id == models.User.id)
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
+        elif month:
+            return (
+                db.query(models.SharedExpense, models.User)
+                .filter(models.SharedExpense.member_id == user_id)
+                .filter(extract("month", models.SharedExpense.date) == month)
+                .join(models.User, models.SharedExpense.member_id == models.User.id)
+                .offset(skip)
+                .limit(limit)
+                .all()
+            )
+        elif year:
+            return (
+                db.query(models.SharedExpense, models.User)
+                .filter(models.SharedExpense.member_id == user_id)
+                .filter(extract("year", models.SharedExpense.date) == year)
+                .join(models.User, models.SharedExpense.member_id == models.User.id)
+                .offset(skip)
+                .limit(limit)
+                .all()
+            )
+        else:
+            return (
+                db.query(models.SharedExpense, models.User)
+                .filter(models.SharedExpense.member_id == user_id)
+                .filter(extract("month", models.SharedExpense.date) == month,extract("year", models.SharedExpense.date) == year)
+                .join(models.User, models.SharedExpense.member_id == models.User.id)
+                .offset(skip)
+                .limit(limit)
+                .all()
+            )
 
     def read_due_expense(db: Session, user_id: int, skip: int, limit: int):
         return (
