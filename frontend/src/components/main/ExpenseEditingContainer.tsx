@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import moment from 'moment';
 import * as Hi from 'react-icons/hi';
 import { FaHandshake } from 'react-icons/fa';
 
-import { Dropdown, InputBox } from 'components';
-import { useFetcher } from 'hooks';
+import { ToastPortal, Dropdown, InputBox } from 'components';
+import { useFetcher, useSubmit } from 'hooks';
 import { handleApiUrl } from 'shared';
 
 interface SharedExpenseData {
@@ -39,16 +39,24 @@ type Friend = {
   request_status: boolean;
 };
 
+type ToastRef = {
+  addMessage: (args: Object) => void;
+};
+
 export const ExpenseEditingContainer: React.FC<Props> = ({
   updateExpenseId,
   expense,
   sharedExpense,
 }) => {
+  const toastRef = useRef<ToastRef>(null);
+  const [, setErrorMessage] = useState('');
   const [sharedExpenseAmount, setSharedExpenseAmount] = useState<number>(0);
   const [friends, setFriends] = useState<Array<Friend>>([]);
   const [mainUserId, setMainUserId] = useState<number | null>(null);
   const [mainUser, setMainUser] = useState<User | null>(null);
-  const isSelfExpense = 'shared_expenses' in expense;
+  const isSelfExpense: boolean = expense.user_id !== undefined;
+
+  console.log(isSelfExpense);
 
   const fetchMainUserOfExpense = useFetcher({
     url: handleApiUrl(`/friends/?friend_id=${mainUserId}`),
@@ -58,11 +66,48 @@ export const ExpenseEditingContainer: React.FC<Props> = ({
     url: handleApiUrl(`/friends/`),
   });
 
+  const deleteExpenseHandler = useSubmit({
+    method: 'DELETE',
+    url: handleApiUrl(`/expenses/`),
+    body: [expense.id] as any,
+  });
+
+  const addToast = (
+    mainMessage: string,
+    subMessage: string,
+    icon: React.ReactElement
+  ) => {
+    toastRef.current?.addMessage({
+      mainMessage: mainMessage,
+      subMessage: subMessage,
+      icon: icon,
+    });
+  };
+
+  const submitForm = async (handler: Function) => {
+    const { response, data } = await handler();
+    console.log(response, data);
+    if (!response.ok) {
+      const message = data.detail;
+      setErrorMessage(message);
+      addToast(
+        'Something went wrong',
+        message,
+        <Hi.HiOutlineExclamationCircle className='flex-shrink-0 h-6 w-6 mr-3 text-red-500' />
+      );
+    } else if (response.ok) {
+      addToast(
+        'Deleted successfully',
+        'Refresh to see changes',
+        <Hi.HiOutlineCheckCircle className='flex-shrink-0 h-6 w-6 mr-3 text-green-400' />
+      );
+    }
+  };
+
   useEffect(() => {
     setMainUserId(expense.main_user_id);
+    console.log(expense);
     if (expense.shared) {
-      console.log(expense);
-      console.log(sharedExpense);
       let sum = 0;
       if (expense.shared_expenses.length !== 0) {
         sum = expense.shared_expenses.reduce(
@@ -94,13 +139,15 @@ export const ExpenseEditingContainer: React.FC<Props> = ({
           <Hi.HiArrowLeft className='h-4 w-4 text-current mr-2.5' />
           Back to expenses
         </button>
-        {expense.shared || isSelfExpense ? (
+        {isSelfExpense ? (
           <div className='space-x-2.5 flex items-center'>
             <button className='py-2.5 px-5 rounded-lg font-semibold text-white bg-green-600 flex items-center'>
               <Hi.HiCheck className='h-4 w-4 text-current mr-1' />
               Save
             </button>
-            <button className='py-2.5 px-5 rounded-lg font-semibold text-red-600 border border-red-600 flex items-center'>
+            <button
+              className='py-2.5 px-5 rounded-lg font-semibold text-red-600 border border-red-600 flex items-center'
+              onClick={() => submitForm(deleteExpenseHandler.submitRequest)}>
               <Hi.HiTrash className='h-4 w-4 text-current mr-1' />
               Delete
             </button>
@@ -125,7 +172,17 @@ export const ExpenseEditingContainer: React.FC<Props> = ({
               </span>
             </div>
             <span className='flex items-center space-y-2.5 text-purple-600 font-semibold text-xs bg-purple-100 rounded-full w-max py-1 px-3 mt-2.5'>
-              <Hi.HiUsers className='mr-1 h-3 w-3' /> Shared
+              {isSelfExpense ? (
+                <span className='flex items-center'>
+                  <Hi.HiUser className='mr-1 h-3 w-3' />
+                  Self
+                </span>
+              ) : (
+                <span className='flex items-center'>
+                  <Hi.HiUsers className='mr-1 h-3 w-3' />
+                  Shared
+                </span>
+              )}
             </span>
           </div>
           <div className='col-span-2 z-10'>
@@ -171,7 +228,7 @@ export const ExpenseEditingContainer: React.FC<Props> = ({
             />
           </div>
         </div>
-        {expense.shared ? (
+        {isSelfExpense && expense.shared_expenses?.length > 0 ? (
           <div className='border-gray-300 rounded-lg xl:mt-5 mt-4 border flex flex-col flex-1'>
             <div className='border-b border-gray-300 py-3.5 px-4 flex'>
               <h4 className='font-poppins font-semibold text-lg flex-1 text-gray-700'>
@@ -202,7 +259,7 @@ export const ExpenseEditingContainer: React.FC<Props> = ({
                     </button>
                   </div>
                 </li>
-                {expense.shared_expenses.map(
+                {expense.shared_expenses?.map(
                   (shared_expense: SharedExpenseData) => (
                     <li className='mb-1 hover:bg-gray-100 px-3 py-4 rounded-lg flex items-center justify-between'>
                       <div className='w-full grid lg:grid-cols-2 lg:space-x-2'>
@@ -230,7 +287,7 @@ export const ExpenseEditingContainer: React.FC<Props> = ({
               </ul>
             </div>
           </div>
-        ) : !isSelfExpense ? (
+        ) : !expense.shared_expenses ? (
           <div className='select-none flex items-center border-2 border-dashed rounded-lg border-purple-500 bg-purple-100 font-poppins font-semibold text-sm text-purple-600 py-3 px-2 mt-5 justify-center space-x-1'>
             <FaHandshake className='h-5 w-5 text-current mr-2.5' /> Expense is
             shared with:
@@ -241,6 +298,7 @@ export const ExpenseEditingContainer: React.FC<Props> = ({
         )}
       </div>
       {/* Self Expense Content */}
+      <ToastPortal autoClose={true} ref={toastRef} />
     </div>
   );
 };
