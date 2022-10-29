@@ -77,8 +77,8 @@ export const NewExpense: React.FC = () => {
       );
     } else if (response.ok) {
       addToast(
-        'added successful',
-        'extra message',
+        'Added successfully',
+        'Refresh to see changes',
         <Hi.HiOutlineCheckCircle className='flex-shrink-0 h-6 w-6 mr-3 text-green-400' />
       );
     }
@@ -160,7 +160,7 @@ export const NewExpense: React.FC = () => {
                 required={false}
               />
             </div>
-            <div className='lg:w-1/2 w-full px-5 py-2.5 mb-8 rounded-xl shadow-lg bg-white border border-gray-200'>
+            <div className='lg:w-1/2 w-full px-5 lg:pb-6 py-2.5 mb-8 rounded-xl shadow-lg bg-white border border-gray-200'>
               <h1 className='mb-3.5 font-poppins font-semibold text-2xl text-gray-500'>
                 Amount Details
               </h1>
@@ -179,9 +179,9 @@ export const NewExpense: React.FC = () => {
                 setMembers={setMembers}
                 multiselect={true}
               />
-              <button className='border p-2 mb-2.5 mt-3 font-semibold text-sm rounded-md text-gray-500 hover:border-gray-500 ring-inset focus:ring-2 ring-gray-500 transition-all duration-200'>
+              {/* <button className='border p-2 mb-2.5 mt-3 font-semibold text-sm rounded-md text-gray-500 hover:border-gray-500 ring-inset focus:ring-2 ring-gray-500 transition-all duration-200'>
                 Custom Split
-              </button>
+              </button> */}
             </div>
             <div className='lg:w-1/2 w-full px-5 py-2.5 lg:mb-0 mb-5 flex justify-between rounded-xl shadow-lg bg-white border-2 border-blue-600'>
               <div>
