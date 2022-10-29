@@ -28,14 +28,14 @@ export const Main = () => {
   const [filterSelection, setFilterSelection] = useState<String>('');
   const [userMaxExpense, setUserMaxExpense] = useState(0);
   const [activeExpenseId, setActiveExpenseId] = useState<null | number>(null);
-  const [togglePrevMonth] = useState(false);
   const [lendBorrowToggle, setLendBorrowToggle] = useState(false);
   const [expenseTotalAmount, setExpenseTotalAmount] = useState(0);
+  const [expenseTotalAmountPervMonth] = useState(0);
+  const [togglePrevMonth] = useState(false);
   const [currentMonthAndYear] = useState(moment().format('MM/YYYY').split('/'));
   const [pervoiusMonthAndYear] = useState(
     moment().subtract(1, 'month').format('MM/YYYY').split('/')
   );
-  const [expenseTotalAmountPervMonth] = useState(0);
 
   const mainIconClass = 'h-10 w-10';
   const moneyIconClass = String(`${mainIconClass} text-green-400`);
@@ -47,15 +47,19 @@ export const Main = () => {
     url: handleApiUrl(
       `/expenses/shared?month=${
         togglePrevMonth ? pervoiusMonthAndYear[0] : currentMonthAndYear[0]
-      }?year=${
+      }&year=${
         togglePrevMonth ? pervoiusMonthAndYear[1] : currentMonthAndYear[1]
       }`
     ),
   });
 
+  // const sharedExpenseFetcher = useFetcher({
+  //   url: handleApiUrl('/expenses/shared'),
+  // });
+
   // Fetching all user shared expenses
   const allSharedExpenseFetcher = useFetcher({
-    url: handleApiUrl(`/expenses/shared`),
+    url: handleApiUrl('/expenses/shared'),
   });
 
   // Fetching user expenses by current month and year
@@ -63,15 +67,19 @@ export const Main = () => {
     url: handleApiUrl(
       `/expenses/?month=${
         togglePrevMonth ? pervoiusMonthAndYear[0] : currentMonthAndYear[0]
-      }?year=${
+      }&year=${
         togglePrevMonth ? pervoiusMonthAndYear[1] : currentMonthAndYear[1]
       }`
     ),
   });
 
+  // const expenseFetcher = useFetcher({
+  //   url: handleApiUrl('/expenses/'),
+  // });
+
   // Fetching all user expenses
   const allExpenseFetcher = useFetcher({
-    url: handleApiUrl(`/expenses/`),
+    url: handleApiUrl('/expenses/'),
   });
 
   // Fetching all user max expense for the month
@@ -168,8 +176,8 @@ export const Main = () => {
       {
         header: 'Total Expenses',
         amount: `₹${expenseTotalAmount}`,
-        percentage: `₹${
-          isNaN(expenseTotalAmount / expenseTotalAmountPervMonth)
+        percentage: `${
+          isNaN((expenseTotalAmount / expenseTotalAmountPervMonth) * 100)
             ? '0'
             : expenseTotalAmount === 0 || expenseTotalAmountPervMonth === 0
             ? '0'
@@ -201,7 +209,7 @@ export const Main = () => {
             </button>
           ),
         percentage: userMaxExpense
-          ? `₹${(expenseTotalAmount / userMaxExpense).toLocaleString(
+          ? `${((expenseTotalAmount / userMaxExpense) * 100).toLocaleString(
               undefined,
               {
                 minimumFractionDigits: 2,
@@ -414,7 +422,6 @@ export const Main = () => {
                                   }
                                   onClick={() => setActiveExpenseId(item.id)}
                                 />
-                                {console.log(item)}
                               </>
                             ))}
                       </ExpenseContainer.Body>
