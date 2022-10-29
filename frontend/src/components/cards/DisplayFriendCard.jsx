@@ -33,7 +33,7 @@ export const DisplayFriendCard = ({ friend, handleSubmissions }) => {
           </h4>
         </div>
       </div>
-      <div className='flex mb-5'>
+      {/* <div className='flex mb-5'>
         <div className='flex flex-col mr-5 text-xs space-y-2.5'>
           <h3 className='font-medium text-gray-400'>Owned</h3>
           <h3 className='font-medium text-gray-400'>Due</h3>
@@ -42,7 +42,7 @@ export const DisplayFriendCard = ({ friend, handleSubmissions }) => {
           <h3 className='font-semibold text-gray-600'>₹1000.00</h3>
           <h3 className='font-semibold text-gray-600'>₹500.00</h3>
         </div>
-      </div>
+      </div> */}
       <button
         className='flex justify-center items-center w-full font-semibold text-xs py-2 bg-red-100 text-red-500 rounded-md hover:opacity-90 focus:ring-2 ring-red-300 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150'
         disabled={checkSentRequests(friend.friend_id)}
