@@ -21,6 +21,7 @@ export const Friends = () => {
   const [friendRequestAcceptedId, setFriendRequestAcceptedId] = useState([]);
   const [friendRequestDeniedId, setFriendRequestDeniedId] = useState([]);
   const [pendingRequestMethod, setPendingRequestMethod] = useState('');
+  const [searchBoxQuery, setSearchBoxQuery] = useState('');
 
   const [, , isAuthenticated, ,] = useContext(UserContext);
 
@@ -86,16 +87,19 @@ export const Friends = () => {
         <div className='max-h-screen overflow-auto flex flex-col flex-1 md:py-5 pt-20 pb-5'>
           {/* Header content */}
           <div className='flex md:px-6 px-4 sticky top-0'>
-            <div className='lg:w-1/2 bg-white text-base py-2 px-5 rounded-lg shadow flex lg:flex-initial flex-1 items-center lg:m-auto mr-5'>
-              <input
-                type='text'
-                className='text-base font-medium text-gray-900 placeholder-opacity-10 outline-none w-full'
-                placeholder='Search'
-              />
-              <button className='text-gray-500 hover:text-gray-700 transition-colors duration-150'>
-                <Hi.HiSearch className='h-6 w-6' />
-              </button>
-            </div>
+            <form action='GET' className='w-full'>
+              <div className='lg:w-1/2 bg-white text-base py-2 px-5 rounded-lg shadow flex lg:flex-initial flex-1 items-center lg:m-auto mr-5'>
+                <input
+                  type='text'
+                  className='text-base font-medium text-gray-900 placeholder-opacity-10 outline-none w-full'
+                  placeholder='Search'
+                  onChange={(e) => setSearchBoxQuery(e.target.value)}
+                />
+                <button className='text-gray-500 hover:text-gray-700 transition-colors duration-150'>
+                  <Hi.HiSearch className='h-6 w-6' />
+                </button>
+              </div>
+            </form>
             <div className='flex items-center'>
               <button
                 className={
@@ -204,12 +208,19 @@ export const Friends = () => {
                 />
               ) : (
                 <div className='grid xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 grid-cols-1 px-1 md:py-2.5 py-1.5'>
-                  {data.map((friend) => (
-                    <AddFriendCard
-                      friend={friend}
-                      handleSubmissions={handleSubmissions}
-                    />
-                  ))}
+                  {data
+                    .filter((item) =>
+                      item.name
+                        .toLowerCase()
+                        .includes(searchBoxQuery.toLowerCase())
+                    )
+                    .map((friend) => (
+                      <AddFriendCard
+                        key={friend.id}
+                        friend={friend}
+                        handleSubmissions={handleSubmissions}
+                      />
+                    ))}
                 </div>
               )
             ) : (
@@ -230,12 +241,19 @@ export const Friends = () => {
                   />
                 ) : (
                   <div className='grid xl:grid-cols-4 xl:grid-rows-3 lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 px-1 py-2.5'>
-                    {data.map((friend) => (
-                      <DisplayFriendCard
-                        friend={friend}
-                        handleSubmissions={handleSubmissions}
-                      />
-                    ))}
+                    {data
+                      .filter((item) =>
+                        item.name
+                          .toLowerCase()
+                          .includes(searchBoxQuery.toLowerCase())
+                      )
+                      .map((friend) => (
+                        <DisplayFriendCard
+                          key={friend.id}
+                          friend={friend}
+                          handleSubmissions={handleSubmissions}
+                        />
+                      ))}
                   </div>
                 )
               ) : (
